@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../dev.db"
+}
+
+model User {
+  id         String  @id @default(cuid())
+  email      String  @unique
+  first_name String
+  last_name  String
+  password   String
+  orders     Order[]
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  customer          User        @relation(fields: [customer_id], references: [id])
+  customer_id       String
+  status            String
+  created_at        DateTime    @default(now())
+  payment_terms     String
+  origin_country    String
+  etd               DateTime
+  eta               DateTime
+  notes             String
+  total_weight      String
+  port_of_entry     String
+  final_destination String
+  quality           String
+  packaging         String
+  items             OrderItem[]
+}
+
+model Item {
+  id        String      @id
+  OrderItem OrderItem[]
+}
+
+model OrderItem {
+  id            String @id @default(cuid())
+  item          Item   @relation(fields: [item_id], references: [id])
+  packaging     String
+  cases         String
+  upc_codes     String
+  size          Int
+  lbs           Float
+  lbs_per_price Float
+  total         Float
+  order         Order  @relation(fields: [order_id], references: [id])
+  item_id       String
+  order_id      String
+}
