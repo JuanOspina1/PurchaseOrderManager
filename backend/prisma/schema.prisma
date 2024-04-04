@@ -20,11 +20,11 @@ model User {
 }
 
 model Order {
-  id                String   @id @default(cuid())
-  customer          User     @relation(fields: [customer_id], references: [id])
+  id                String      @id @default(cuid())
+  customer          User        @relation(fields: [customer_id], references: [id])
   customer_id       String
   status            String
-  created_at        DateTime @default(now())
+  created_at        DateTime    @default(now())
   payment_terms     String
   origin_country    String
   etd               DateTime
@@ -35,12 +35,17 @@ model Order {
   final_destination String
   quality           String
   packaging         String
-  items             Item[]
+  items             OrderItem[]
 }
 
 model Item {
+  id        String      @id
+  OrderItem OrderItem[]
+}
+
+model OrderItem {
   id            String @id @default(cuid())
-  name          String
+  item          Item   @relation(fields: [item_id], references: [id])
   packaging     String
   cases         String
   upc_codes     String
@@ -49,5 +54,6 @@ model Item {
   lbs_per_price Float
   total         Float
   order         Order  @relation(fields: [order_id], references: [id])
+  item_id       String
   order_id      String
 }
