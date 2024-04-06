@@ -16,17 +16,6 @@ export const loginController = async (req: Request, res: Response) => {
 	const accessToken = generateAccessToken(loginUser.id);
 	const refreshToken = generateRefreshToken(loginUser.id);
 
-	// Set cookies in the response
-	// res.cookie("access_token", accessToken, {
-	// 	httpOnly: true,
-	// 	expires: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes,
-	// });
-
-	// res.cookie("refresh_token", refreshToken, {
-	// 	httpOnly: true,
-	// 	expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days,
-	// });
-
 	res.cookie("access_token", accessToken, {
 		httpOnly: true,
 		expires: new Date(
