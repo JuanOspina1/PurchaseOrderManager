@@ -9,6 +9,7 @@ export const ErrorHandler = (
 	process.env.NODE_ENV === "development" && console.log(err);
 	res.status(err.status || 500);
 	return res.json({
+		success: false,
 		message: err.message,
 		error: err,
 	});
