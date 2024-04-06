@@ -1,8 +1,16 @@
 import { Request, Response } from "express";
-import { RegisterUserService } from "../services/auth.service";
+import {
+	LoginUserService,
+	RegisterUserService,
+} from "../services/auth.service";
+import { StatusCodes } from "http-status-codes";
 
 export const loginController = async (req: Request, res: Response) => {
-	return res.json({ message: "Login" });
+	const loginUser = await LoginUserService({
+		email: req.body.email,
+		password: req.body.password,
+	});
+	return res.status(StatusCodes.OK).json({ success: true, data: loginUser });
 };
 
 export const registerController = async (req: Request, res: Response) => {
@@ -12,5 +20,5 @@ export const registerController = async (req: Request, res: Response) => {
 		email: req.body.email,
 		password: req.body.password,
 	});
-	return res.json({ success: true, data: registerUser });
+	return res.status(StatusCodes.OK).json({ success: true, data: registerUser });
 };

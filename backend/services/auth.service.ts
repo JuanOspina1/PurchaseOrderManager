@@ -67,3 +67,35 @@ export const RegisterUserService = async (body: UserRegisterBody) => {
 			);
 	}
 };
+
+export const LoginUserService = async (body: {
+	email?: string;
+	password?: string;
+}) => {
+	const { email = null, password = null } = body;
+	const requiredFields = checkFields([
+		{ name: "email", field: email },
+		{ name: "password", field: password },
+	]);
+
+	if (requiredFields !== null)
+		throw new ErrorWithStatus(
+			StatusCodes.BAD_REQUEST,
+			"Missing required fields " + requiredFields.join(", ")
+		);
+
+	const user = await prisma.user.findUnique({
+		where: { email: email || undefined },
+	});
+
+	if (!user)
+		throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "User not found.");
+
+	const validatePassword = await argon2.verify(user.password, password);
+
+	if (!validatePassword)
+		throw new ErrorWithStatus(StatusCodes.BAD_REQUEST, "Invalid password.");
+
+	// TODO: Complete later, send back JWT access, and refresh token
+	return { ...user, password: null };
+};
