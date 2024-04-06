@@ -29,7 +29,9 @@ export const checkFields = (fields: fieldsType[]) => {
  * @returns The generated access token.
  */
 export const generateAccessToken = (userId: string) => {
-	return sign({ userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: "15m" });
+	return sign({ userId }, process.env.JWT_ACCESS_SECRET as string, {
+		expiresIn: "15m",
+	});
 };
 
 /**
@@ -38,5 +40,7 @@ export const generateAccessToken = (userId: string) => {
  * @returns The generated refresh token.
  */
 export const generateRefreshToken = (userId: string) => {
-	return sign({ userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
+	return sign({ userId }, process.env.JWT_REFRESH_SECRET as string, {
+		expiresIn: "7d",
+	});
 };
