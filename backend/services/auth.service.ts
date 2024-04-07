@@ -96,6 +96,5 @@ export const LoginUserService = async (body: {
 	if (!validatePassword)
 		throw new ErrorWithStatus(StatusCodes.BAD_REQUEST, "Invalid password.");
 
-	// TODO: Complete later, send back JWT access, and refresh token
 	return { ...user, password: null };
 };

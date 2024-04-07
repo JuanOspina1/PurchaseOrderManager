@@ -15,7 +15,7 @@ Router.route("/").get((req: Request, res: Response) => {
 });
 
 Router.route("/login").post(Wrapper(loginController));
-Router.route("/register").post(Wrapper(registerController));
+// Router.route("/register").post(Wrapper(registerController));
 Router.route("/logout").post(AuthenticatedOnly, Wrapper(logoutController));
 
 export default Router;

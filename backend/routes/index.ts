@@ -4,7 +4,7 @@ import authRouter from "./auth.route.js";
 
 const Routes = (app: Express) => {
 	app.use("/", authRouter);
-	app.use("/customer", userRouter);
+	app.use("/user", userRouter);
 };
 
 export default Routes;

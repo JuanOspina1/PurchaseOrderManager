@@ -44,3 +44,29 @@ export const generateRefreshToken = (userId: string) => {
 		expiresIn: "7d",
 	});
 };
+
+export const CleanDBUserSelect = {
+	id: true,
+	first_name: true,
+	last_name: true,
+	email: true,
+	address: true,
+	orders: true,
+};
+
+/**
+ * Generates a random password of the specified length.
+ * @param length - The length of the password to generate.
+ * @returns The randomly generated password.
+ * If the length is less than 6, null is returned.
+ */
+export const PasswordGenerator = (length: number) => {
+	if (length < 6) return null;
+	const possibleCharacters = `abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYX0123456789!@#$*&'()*+,-./|:;<=>?~"`;
+	let password = "";
+	for (let i = 0; i < length; i++) {
+		password +=
+			possibleCharacters[Math.floor(Math.random() * possibleCharacters.length)];
+	}
+	return password;
+};
