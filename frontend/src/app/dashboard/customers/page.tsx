@@ -1,19 +1,20 @@
+'use client';
+
 import * as React from 'react';
-import type { Metadata } from 'next';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Download as DownloadIcon } from '@phosphor-icons/react/dist/ssr/Download';
 import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { Upload as UploadIcon } from '@phosphor-icons/react/dist/ssr/Upload';
+import { X } from '@phosphor-icons/react/dist/ssr/X';
 import dayjs from 'dayjs';
 
 import { config } from '@/config';
+import { CustomersAddForm } from '@/components/dashboard/customer/customers-addform';
 import { CustomersFilters } from '@/components/dashboard/customer/customers-filters';
 import { CustomersTable } from '@/components/dashboard/customer/customers-table';
 import type { Customer } from '@/components/dashboard/customer/customers-table';
-
-export const metadata = { title: `Customers | Dashboard | ${config.site.name}` } satisfies Metadata;
 
 const customers = [
   {
@@ -115,33 +116,58 @@ export default function Page(): React.JSX.Element {
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
+  const [toggleForm, setToggleForm] = React.useState(true);
+
+  function handleCustomerForm() {
+    setToggleForm(!toggleForm);
+  }
+
   return (
     <Stack spacing={3}>
       <Stack direction="row" spacing={3}>
         <Stack spacing={1} sx={{ flex: '1 1 auto' }}>
           <Typography variant="h4">Customers</Typography>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          {/* IMPORT EXPORT FUNCTIONALITY TO BE ADDED AT A FUTURE DATE */}
+          {/* <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Button color="inherit" startIcon={<UploadIcon fontSize="var(--icon-fontSize-md)" />}>
               Import
             </Button>
             <Button color="inherit" startIcon={<DownloadIcon fontSize="var(--icon-fontSize-md)" />}>
               Export
             </Button>
-          </Stack>
+          </Stack> */}
         </Stack>
         <div>
-          <Button startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />} variant="contained">
-            Add
-          </Button>
+          {toggleForm ? (
+            <Button
+              startIcon={<PlusIcon fontSize="var(--icon-fontSize-md)" />}
+              variant="contained"
+              onClick={() => handleCustomerForm()}
+            >
+              Add
+            </Button>
+          ) : (
+            <Button
+              startIcon={<X fontSize="var(--icon-fontSize-md)" />}
+              variant="contained"
+              onClick={() => handleCustomerForm()}
+            >
+              Cancel
+            </Button>
+          )}
         </div>
       </Stack>
-      <CustomersFilters />
-      <CustomersTable
-        count={paginatedCustomers.length}
-        page={page}
-        rows={paginatedCustomers}
-        rowsPerPage={rowsPerPage}
-      />
+      {toggleForm ? <CustomersFilters /> : null}
+      {toggleForm ? (
+        <CustomersTable
+          count={paginatedCustomers.length}
+          page={page}
+          rows={paginatedCustomers}
+          rowsPerPage={rowsPerPage}
+        />
+      ) : (
+        <CustomersAddForm handleCustomerForm={handleCustomerForm} />
+      )}
     </Stack>
   );
 }
