@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { Req } from "../types";
+import { GetCompanyService } from "../services/company.service";
 
 export const CreateCompany = async (req: Request, res: Response) => {
 	const Company = await CreateCompanyService({});
@@ -15,7 +16,7 @@ export const GetCompany = async (req: Req, res: Response) => {
 		params: { id },
 		user,
 	} = req;
-	const Company = await GetCompanyService({ id, user });
+	const Company = await GetCompanyService({ company_id: id, user_id: user.id });
 	return res.status(StatusCodes.OK).json({ success: true, data: Company });
 };
 
