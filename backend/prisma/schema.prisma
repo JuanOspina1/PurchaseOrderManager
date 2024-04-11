@@ -34,7 +34,6 @@ model Main_Company {
 model Customer_Company {
   id           String @id @default(cuid())
   name         String
-  company_name String
   address      String
   state        String
   zip_code     String
