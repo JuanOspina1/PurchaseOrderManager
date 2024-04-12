@@ -20,8 +20,8 @@ import { z as zod } from 'zod';
 
 import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
-import { useUser } from '@/hooks/use-user';
 import { useLogin } from '@/hooks/auth/useLogin';
+import { useUser } from '@/hooks/use-user';
 
 const schema = zod.object({
   email: zod.string().min(1, { message: 'Email is required' }).email(),
@@ -35,9 +35,8 @@ const defaultValues = { email: 'sofia@devias.io', password: 'Secret1' } satisfie
 export function SignInForm(): React.JSX.Element {
   const router = useRouter();
 
-
   const [showPassword, setShowPassword] = React.useState<boolean>();
-  const {mutate, isPending} = useLogin();
+  const { mutate, isPending } = useLogin();
 
   const {
     control,
@@ -57,9 +56,7 @@ export function SignInForm(): React.JSX.Element {
       //   setIsPending(false);
       //   return;
       // }
-
-      mutate(values)
-
+      mutate(values);
     },
     [mutate, router, setError]
   );
