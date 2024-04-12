@@ -1,5 +1,7 @@
 import { sign } from "jsonwebtoken";
 
+export const MAIN_COMPANY_ID = "cluwuwvzm000014dacku6cvqp";
+
 interface fieldsType {
 	name: string;
 	field: any;
