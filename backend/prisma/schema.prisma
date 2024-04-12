@@ -18,15 +18,15 @@ model User {
   password   String
   address    String?
   orders     Order[]
+  m_company Main_Company?      @relation(fields: [m_company_id], references: [id])
+  m_company_id String?
   c_company  Customer_Company? @relation(name: "company_owner")
 }
 
 model Main_Company {
   id   String @id @default(cuid())
   name String
-  // owner     User   @relation("company_owner", fields: [owner_id], references: [id])
-  // owner_id  String @unique
-  // customers User[] @relation("company_customer")
+  users User[]
 }
 
 model Customer_Company {
