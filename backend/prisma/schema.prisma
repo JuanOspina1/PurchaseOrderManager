@@ -11,13 +11,44 @@ datasource db {
 }
 
 model User {
-  id         String  @id @default(cuid())
-  email      String  @unique
-  first_name String
-  last_name  String
-  password   String
-  address    String?
-  orders     Order[]
+  id           String            @id @default(cuid())
+  email        String            @unique
+  first_name   String
+  last_name    String
+  password     String
+  address      String?
+  orders       Order[]
+  m_company    Main_Company?     @relation(fields: [m_company_id], references: [id])
+  m_company_id String?
+  c_company    Customer_Company? @relation(name: "company_owner")
+}
+
+model Main_Company {
+  id           String @id @default(cuid())
+  name         String
+  address      String
+  city         String
+  state        String
+  zip_code     String
+  phone_number Int
+  website      String
+  users        User[]
+}
+
+model Customer_Company {
+  id               String             @id @default(cuid())
+  name             String
+  address          String
+  city             String
+  state            String
+  zip_code         String
+  phone_number     Int
+  website          String
+  owner            User               @relation("company_owner", fields: [owner_id], references: [id])
+  owner_id         String             @unique
+  customers        Customer_Company[] @relation("company_customers")
+  company_customer Customer_Company?  @relation("company_customers", fields: [customer_id], references: [id])
+  customer_id      String?
 }
 
 model Order {
