@@ -1,7 +1,13 @@
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { Req } from "../types";
-import { GetCompanyService } from "../services/company.service";
+import {
+	CreateCompanyService,
+	DeleteCompanyService,
+	EditCompanyService,
+	GetCompaniesService,
+	GetCompanyService,
+} from "../services/company.service";
 
 export const CreateCompany = async (req: Request, res: Response) => {
 	const Company = await CreateCompanyService({});

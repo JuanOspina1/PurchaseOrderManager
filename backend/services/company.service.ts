@@ -2,10 +2,17 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ErrorWithStatus } from "../middlewear/ErrorWithStatus";
 import prisma from "../prisma/db";
 import { CleanDBUserSelect } from "../utils";
+import e from "express";
+import { User } from "../types";
 
 interface GetCompanies {
 	user_id: string;
 	company_id: string;
+}
+
+interface CompanyProps {
+	id: string;
+	user: User;
 }
 
 /**
@@ -16,6 +23,7 @@ interface GetCompanies {
  * @throws ErrorWithStatus with NOT_FOUND status code if the company is not found.
  * @throws ErrorWithStatus with UNAUTHORIZED status code if the user is not authorized to access the company.
  */
+
 export const GetCompanyService = async ({
 	user_id,
 	company_id,
@@ -29,12 +37,10 @@ export const GetCompanyService = async ({
 			state: true,
 			website: true,
 			zip_code: true,
-			customers: {
-				select: CleanDBUserSelect,
-			},
 			owner: {
 				select: CleanDBUserSelect,
 			},
+			customers: true,
 		},
 	});
 
@@ -45,7 +51,7 @@ export const GetCompanyService = async ({
 	if (
 		!(
 			(company.owner && company.owner.id === user_id) ||
-			company.customers.find((customer) => customer.id === user_id)
+			company.customers.find((customer) => customer.owner_id === user_id)
 		)
 	)
 		throw new ErrorWithStatus(
@@ -54,4 +60,26 @@ export const GetCompanyService = async ({
 		);
 
 	return company;
+};
+
+export const GetCompaniesService = async ({}) => {
+	return 1;
+};
+
+export const CreateCompanyService = async ({
+	body,
+	user,
+}: {
+	body: string;
+	user: User;
+}) => {
+	return 1;
+};
+
+export const EditCompanyService = async ({ id, user }: CompanyProps) => {
+	return 1;
+};
+
+export const DeleteCompanyService = async ({ id, user }: CompanyProps) => {
+	return 1;
 };
