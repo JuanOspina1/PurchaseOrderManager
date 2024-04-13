@@ -184,8 +184,174 @@ export const CreateCompanyService = async ({
 	return company;
 };
 
-export const EditCompanyService = async ({ id, user }: CompanyProps) => {
-	return 1;
+/**
+ * Edits a company's information.
+ * @param company_id - The ID of the company to edit.
+ * @param user_id - The ID of the user performing the edit.
+ * @param body - The updated company information.
+ * @returns The updated company object.
+ * @throws ErrorWithStatus - If the company is not found, the user is not authorized, or an invalid owner_id is provided.
+ */
+export const EditCompanyService = async ({
+	company_id,
+	user_id,
+	body,
+}: {
+	company_id: string;
+	user_id: string;
+	body: any;
+}) => {
+	const company = await prisma.customer_Company.findUnique({
+		where: { id: company_id },
+	});
+
+	const userIsAdmin = await IsAdmin(user_id);
+
+	if (!company)
+		throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "Company not found.");
+
+	if (!(userIsAdmin || company.owner_id === user_id))
+		throw new ErrorWithStatus(
+			StatusCodes.UNAUTHORIZED,
+			ReasonPhrases.UNAUTHORIZED
+		);
+
+	const {
+		owner_id,
+		name,
+		address,
+		phone_number,
+		city,
+		state,
+		website,
+		zip_code,
+	} = body;
+
+	if (owner_id && !userIsAdmin)
+		throw new ErrorWithStatus(
+			StatusCodes.UNAUTHORIZED,
+			"You do not have permission to change the owner of this company."
+		);
+
+	if (owner_id) {
+		const userExists = prisma.user.findUnique({
+			where: { id: owner_id },
+		});
+
+		if (!userExists)
+			throw new ErrorWithStatus(
+				StatusCodes.BAD_REQUEST,
+				"Invalid owner_id provided."
+			);
+	}
+
+	// TODO: Ability to add and remove customers.
+
+	const updatedCompany = await prisma.customer_Company.update({
+		where: {
+			id: company_id,
+		},
+		data: {
+			owner_id: owner_id && owner_id,
+			name: name && name,
+			address: address && address,
+			phone_number: phone_number && phone_number,
+			city: city && city,
+			state: state && state,
+			website: website && website,
+			zip_code: zip_code && zip_code,
+		},
+	});
+
+	return updatedCompany;
+};
+
+/**
+ * Adds customers to a company.
+ * @param company_id - The ID of the company.
+ * @param customer_ids - An array of customer IDs to be added to the company.
+ * @returns The updated company object with the added customers.
+ * @throws ErrorWithStatus with status code 404 if the company is not found.
+ */
+export const AddCustomersToCompanyService = async ({
+	company_id,
+	customer_ids,
+}: {
+	company_id: string;
+	customer_ids: string[];
+}) => {
+	const company = await prisma.customer_Company.findUnique({
+		where: { id: company_id },
+		include: { customers: true },
+	});
+
+	if (!company) {
+		throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "Company not found.");
+	}
+
+	// Filter out existing customers
+	const existingCustomers = customer_ids.filter((customer_id) => {
+		return !company.customers.find((customer) => customer.id === customer_id);
+	});
+
+	// Add customers to the company
+	const updatedCompany = await prisma.customer_Company.update({
+		where: { id: company_id },
+		data: {
+			customers: {
+				connect: existingCustomers.map((customer_id) => ({ id: customer_id })),
+			},
+		},
+		include: { customers: true },
+	});
+
+	return updatedCompany;
+};
+
+// Remove customers from company
+/**
+ * Removes customers from a company.
+ * @param {Object} params - The parameters for removing customers from a company.
+ * @param {string} params.company_id - The ID of the company.
+ * @param {string[]} params.customer_ids - The IDs of the customers to be removed.
+ * @returns {Promise<Object>} - A promise that resolves to the updated company object.
+ * @throws {ErrorWithStatus} - If the company is not found.
+ */
+export const RemoveCustomersFromCompanyService = async ({
+	company_id,
+	customer_ids,
+}: {
+	company_id: string;
+	customer_ids: string[];
+}) => {
+	const company = await prisma.customer_Company.findUnique({
+		where: { id: company_id },
+		include: { customers: true },
+	});
+
+	if (!company) {
+		throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "Company not found.");
+	}
+
+	// Filter out non-existing customers
+	const existingCustomers = customer_ids.filter((customer_id) => {
+		return company.customers.find((customer) => customer.id === customer_id);
+	});
+
+	// Remove customers from the company
+	const updatedCompany = await prisma.customer_Company.update({
+		where: { id: company_id },
+		data: {
+			customers: {
+				disconnect: existingCustomers.map((customer_id) => ({
+					id: customer_id,
+				})),
+			},
+		},
+		include: { customers: true },
+	});
+
+	return updatedCompany;
 };
 
 /**
