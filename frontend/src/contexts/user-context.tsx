@@ -2,12 +2,14 @@
 
 import * as React from 'react';
 
-import { UserWithAccessToken } from '@/types/user';
+import { User } from '@/types/user';
 import { useState } from 'react';
 
 export interface UserContextValue {
-  user: UserWithAccessToken;
-  setDetails: (data : UserWithAccessToken) => void,
+  accessToken : string,
+  setAccessToken  : (data  : string) => void
+  user: User;
+  setDetails: (data : User) => void,
   error: string,
   setError: (data : string) => void,
   isLoading: boolean;
@@ -21,11 +23,14 @@ export interface UserProviderProps {
 }
 
 export function UserProvider({ children }: UserProviderProps): React.JSX.Element {
-  const [user, setDetails] = useState({} as UserWithAccessToken)
+  const [accessToken, setAccessToken] = useState("")
+  const [user, setDetails] = useState({} as User)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading]  = useState(true)
 
   return <UserContext.Provider value={{
+    accessToken,
+    setAccessToken,
     user,
     setDetails,
     error,
