@@ -17,6 +17,7 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
   const { user, error, isLoading } = useUser();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
 
+  // TODO: update this to persist the logged in user 
   const checkPermissions = async (): Promise<void> => {
     if (isLoading) {
       return;
