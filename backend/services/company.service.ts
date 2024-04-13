@@ -161,6 +161,23 @@ export const CreateCompanyService = async ({
 	// TODO: phone number validation
 	// TODO: customer company upon creation
 
+	const owner = await prisma.user.findUnique({
+		where: { id: owner_id },
+		include: { c_company: true },
+	});
+
+	if (!owner)
+		throw new ErrorWithStatus(
+			StatusCodes.BAD_REQUEST,
+			"Invalid owner_id provided."
+		);
+	// TODO: figure out if a user can only own one company.
+	if (owner.c_company && owner.c_company.id !== null)
+		throw new ErrorWithStatus(
+			StatusCodes.BAD_REQUEST,
+			"User already owns a company."
+		);
+
 	if (requiredFields !== null)
 		throw new ErrorWithStatus(
 			StatusCodes.BAD_REQUEST,
@@ -178,7 +195,7 @@ export const CreateCompanyService = async ({
 			website,
 			zip_code,
 		},
-		select: company_select_fields,
+		select: { id: true, ...company_select_fields },
 	});
 
 	return company;
@@ -289,7 +306,15 @@ export const AddCustomersToCompanyService = async ({
 		throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "Company not found.");
 	}
 
+	// TODO: Make sure they're not the owner of the company.
 	// Filter out existing customers
+
+	if (!(customer_ids instanceof Array))
+		throw new ErrorWithStatus(
+			StatusCodes.BAD_REQUEST,
+			"Invalid customer_ids provided."
+		);
+
 	const existingCustomers = customer_ids.filter((customer_id) => {
 		return !company.customers.find((customer) => customer.id === customer_id);
 	});

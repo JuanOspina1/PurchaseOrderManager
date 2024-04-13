@@ -53,7 +53,11 @@ export const EditCompany = async (req: Req, res: Response) => {
 };
 
 export const AddCustomersToCompany = async (req: Req, res: Response) => {
-	const { company_id, customer_ids } = req.body;
+	const {
+		params: { id: company_id },
+		body: { customer_ids },
+	} = req;
+
 	const company = await AddCustomersToCompanyService({
 		company_id,
 		customer_ids,
@@ -62,7 +66,11 @@ export const AddCustomersToCompany = async (req: Req, res: Response) => {
 };
 
 export const RemoveCustomersFromCompany = async (req: Req, res: Response) => {
-	const { company_id, customer_ids } = req.body;
+	const {
+		params: { id: company_id },
+		body: { customer_ids },
+	} = req;
+
 	const company = await RemoveCustomersFromCompanyService({
 		company_id,
 		customer_ids,
