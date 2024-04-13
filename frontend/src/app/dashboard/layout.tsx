@@ -13,7 +13,8 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps): React.JSX.Element {
   return (
-    <AuthGuard>
+    // <AuthGuard>
+    <>
       <GlobalStyles
         styles={{
           body: {
@@ -45,6 +46,7 @@ export default function Layout({ children }: LayoutProps): React.JSX.Element {
           </main>
         </Box>
       </Box>
-    </AuthGuard>
+    {/* </AuthGuard> */}
+   </>
   );
 }
