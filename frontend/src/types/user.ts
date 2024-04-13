@@ -1,8 +1,14 @@
 export interface User {
   id: string;
-  name?: string;
+  email : string,
+  first_name : string,
+  last_name  : string,
+  address : string
   avatar?: string;
-  email?: string;
 
   [key: string]: unknown;
+}
+
+export interface UserWithAccessToken extends User {
+  accessToken : string 
 }
