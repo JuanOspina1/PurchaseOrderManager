@@ -1,4 +1,7 @@
 import { sign } from "jsonwebtoken";
+import prisma from "./prisma/db";
+import { ErrorWithStatus } from "./middlewear/ErrorWithStatus";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
 
 export const MAIN_COMPANY_ID = "cluwuwvzm000014dacku6cvqp";
 
@@ -71,4 +74,23 @@ export const PasswordGenerator = (length: number) => {
 			possibleCharacters[Math.floor(Math.random() * possibleCharacters.length)];
 	}
 	return password;
+};
+
+export const IsAdmin = async (user_id: string) => {
+	const main_company = await prisma.main_Company.findUnique({
+		where: { id: MAIN_COMPANY_ID },
+		select: {
+			users: true,
+		},
+	});
+
+	if (!main_company)
+		throw new ErrorWithStatus(
+			StatusCodes.INTERNAL_SERVER_ERROR,
+			ReasonPhrases.INTERNAL_SERVER_ERROR
+		);
+
+	const admins = main_company.users;
+
+	return admins.find((admin) => admin.id === user_id) ? true : false;
 };

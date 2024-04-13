@@ -25,6 +25,41 @@ async function main() {
 			isAdmin: false,
 		});
 
+		await prisma.customer_Company.upsert({
+			create: {
+				address: "St 919, Zn 40",
+				city: "New York",
+				name: "Fisheroo",
+				phone_number: 1234567,
+				state: "Legends",
+				website: "fisheroo.com",
+				zip_code: "1234",
+				id: "cluxtonyf000010wex3x1swss",
+				owner: {
+					connect: {
+						email: "normal@main.com",
+					},
+				},
+			},
+			update: {
+				address: "St 919, Zn 40",
+				city: "New York",
+				name: "Fisheroo",
+				phone_number: 1234567,
+				state: "Legends",
+				website: "fisheroo.com",
+				zip_code: "1234",
+				owner: {
+					connect: {
+						email: "normal@mail.com",
+					},
+				},
+			},
+			where: {
+				id: "cluxtonyf000010wex3x1swss",
+			},
+		});
+
 		console.log("Successfully seeded db.");
 	} catch (error) {
 		console.log(error);
