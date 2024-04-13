@@ -5,19 +5,19 @@ import { useUser } from "../use-user";
 import { useRouter } from "next/navigation";
 
 export const useLogin = () => {
-  const { checkSession } = useUser();
+//   const { checkSession } = useUser();
   const router = useRouter();
 
     return useMutation({
         mutationFn: async (input : SignInWithPasswordParams) => {
-            const res = await axios.post('/login', input);
+            const res = await axios.post('/login', input, {withCredentials : true});
 
             return res.data;
         },
         onSuccess: async () => {
-            await checkSession?.();
+            // await checkSession?.();
 
-            router.refresh();
+            router.push('/dashboard')
         }
     })
 }
