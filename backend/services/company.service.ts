@@ -262,25 +262,35 @@ export const EditCompanyService = async ({
 			);
 	}
 
-	// TODO: Ability to add and remove customers.
-
-	const updatedCompany = await prisma.customer_Company.update({
-		where: {
-			id: company_id,
-		},
-		data: {
-			owner_id: owner_id && owner_id,
-			name: name && name,
-			address: address && address,
-			phone_number: phone_number && phone_number,
-			city: city && city,
-			state: state && state,
-			website: website && website,
-			zip_code: zip_code && zip_code,
-		},
-	});
-
-	return updatedCompany;
+	try {
+		return await prisma.customer_Company.update({
+			where: {
+				id: company_id,
+			},
+			data: {
+				owner_id: owner_id && owner_id,
+				name: name && name,
+				address: address && address,
+				phone_number: phone_number && phone_number,
+				city: city && city,
+				state: state && state,
+				website: website && website,
+				zip_code: zip_code && zip_code,
+			},
+			select: company_select_fields,
+		});
+	} catch (error: any) {
+		if (error.code === "P2002" && error.meta.target.includes("owner_id"))
+			throw new ErrorWithStatus(
+				StatusCodes.BAD_REQUEST,
+				"owner provided is already associated with a company."
+			);
+		process.env.NODE_ENV === "development" && console.log(error);
+		throw new ErrorWithStatus(
+			StatusCodes.INTERNAL_SERVER_ERROR,
+			ReasonPhrases.INTERNAL_SERVER_ERROR
+		);
+	}
 };
 
 /**
@@ -306,31 +316,49 @@ export const AddCustomersToCompanyService = async ({
 		throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "Company not found.");
 	}
 
-	// TODO: Make sure they're not the owner of the company.
-	// Filter out existing customers
-
 	if (!(customer_ids instanceof Array))
 		throw new ErrorWithStatus(
 			StatusCodes.BAD_REQUEST,
 			"Invalid customer_ids provided."
 		);
 
-	const existingCustomers = customer_ids.filter((customer_id) => {
-		return !company.customers.find((customer) => customer.id === customer_id);
+	const customersToAdd = customer_ids.filter((customer_id) => {
+		// Returns customers that are not already added to the company
+		return !(
+			customer_id === company_id ||
+			company.customers.find((customer) => customer.id === customer_id)
+		);
 	});
 
-	// Add customers to the company
-	const updatedCompany = await prisma.customer_Company.update({
-		where: { id: company_id },
-		data: {
-			customers: {
-				connect: existingCustomers.map((customer_id) => ({ id: customer_id })),
+	if (customersToAdd.length === 0)
+		throw new ErrorWithStatus(
+			StatusCodes.NO_CONTENT,
+			"No customers were added to the company."
+		);
+
+	try {
+		// Add customers to the company
+		return await prisma.customer_Company.update({
+			where: { id: company_id },
+			data: {
+				customers: {
+					connect: customersToAdd.map((customer_id) => ({ id: customer_id })),
+				},
 			},
-		},
-		include: { customers: true },
-	});
-
-	return updatedCompany;
+			select: company_select_fields,
+		});
+	} catch (error: any) {
+		if (error.code === "P2018")
+			throw new ErrorWithStatus(
+				StatusCodes.BAD_REQUEST,
+				"some of the ids provided are not valid."
+			);
+		process.env.NODE_ENV === "development" && console.log(error);
+		throw new ErrorWithStatus(
+			StatusCodes.INTERNAL_SERVER_ERROR,
+			ReasonPhrases.INTERNAL_SERVER_ERROR
+		);
+	}
 };
 
 // Remove customers from company
@@ -358,25 +386,35 @@ export const RemoveCustomersFromCompanyService = async ({
 		throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "Company not found.");
 	}
 
+	if (!(customer_ids instanceof Array))
+		throw new ErrorWithStatus(
+			StatusCodes.BAD_REQUEST,
+			"Invalid customer_ids provided."
+		);
+
 	// Filter out non-existing customers
-	const existingCustomers = customer_ids.filter((customer_id) => {
+	const customersToRemove = customer_ids.filter((customer_id) => {
 		return company.customers.find((customer) => customer.id === customer_id);
 	});
 
+	if (customersToRemove.length === 0)
+		throw new ErrorWithStatus(
+			StatusCodes.NO_CONTENT,
+			"No customers were removed."
+		);
+
 	// Remove customers from the company
-	const updatedCompany = await prisma.customer_Company.update({
+	return await prisma.customer_Company.update({
 		where: { id: company_id },
 		data: {
 			customers: {
-				disconnect: existingCustomers.map((customer_id) => ({
+				disconnect: customersToRemove.map((customer_id) => ({
 					id: customer_id,
 				})),
 			},
 		},
-		include: { customers: true },
+		select: company_select_fields,
 	});
-
-	return updatedCompany;
 };
 
 /**
