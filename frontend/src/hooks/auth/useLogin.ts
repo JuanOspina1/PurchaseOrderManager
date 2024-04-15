@@ -1,23 +1,27 @@
-import { SignInWithPasswordParams } from "@/lib/auth/client"
-import axios from "@/lib/axios"
-import { useMutation } from "@tanstack/react-query"
-import { useUser } from "../use-user";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
+
+import { AuthResponse } from '@/types/auth/AuthResponse';
+import { SignInWithPasswordParams } from '@/lib/auth/client';
+import axios from '@/lib/axios';
+
+import { useUser } from '../use-user';
 
 export const useLogin = () => {
-  const { checkSession } = useUser();
+  const { setAccessToken, setDetails } = useUser();
   const router = useRouter();
 
-    return useMutation({
-        mutationFn: async (input : SignInWithPasswordParams) => {
-            const res = await axios.post('/login', input);
+  return useMutation({
+    mutationFn: async (input: SignInWithPasswordParams) => {
+      const res = await axios.post<AuthResponse>('http://localhost:5000/login', input, { withCredentials: true });
 
-            return res.data;
-        },
-        onSuccess: async () => {
-            await checkSession?.();
-
-            router.refresh();
-        }
-    })
-}
+      return res.data;
+    },
+    onSuccess: async ({ accessToken, data }) => {
+      // await checkSession?.();
+      setAccessToken(accessToken);
+      setDetails(data);
+      router.push('/dashboard');
+    },
+  });
+};

@@ -3,10 +3,14 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import Alert from '@mui/material/Alert';
+import { isAxiosError } from 'axios';
 
+import { ApiResponse } from '@/types/api-response';
+import { User } from '@/types/user';
 import { paths } from '@/paths';
 import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
+import { useAxios } from '@/hooks/useAxios';
 
 export interface GuestGuardProps {
   children: React.ReactNode;
@@ -14,38 +18,26 @@ export interface GuestGuardProps {
 
 export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | null {
   const router = useRouter();
-  const { user, error, isLoading } = useUser();
-  const [isChecking, setIsChecking] = React.useState<boolean>(true);
-
-  const checkPermissions = async (): Promise<void> => {
-    if (isLoading) {
-      return;
-    }
-
-    if (error) {
-      setIsChecking(false);
-      return;
-    }
-
-    if (user) {
-      logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
-      router.replace(paths.dashboard.overview);
-      return;
-    }
-
-    setIsChecking(false);
-  };
+  const { user, error, isLoading, setIsLoading } = useUser();
+  const client = useAxios();
 
   React.useEffect(() => {
-    checkPermissions().catch(() => {
-      // noop
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Expected
-  }, [user, error, isLoading]);
+    const checkUserSession = async () => {
+      try {
+        const res = await client<ApiResponse<User>>('http://localhost:5000/user');
 
-  if (isChecking) {
-    return null;
-  }
+        if (res.status === 200) {
+          router.replace(paths.dashboard.overview);
+        }
+      } catch (err) {
+        if (isAxiosError(err)) {
+          logger.debug(err.message);
+        }
+      }
+    };
+    checkUserSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Expected
+  }, []);
 
   if (error) {
     return <Alert color="error">{error}</Alert>;

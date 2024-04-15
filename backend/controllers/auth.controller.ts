@@ -4,7 +4,10 @@ import {
 	RegisterUserService,
 } from "../services/auth.service";
 import { StatusCodes } from "http-status-codes";
-import { generateAccessToken, generateRefreshToken } from "../utils";
+import { CleanDBUserSelect, generateAccessToken, generateRefreshToken } from "../utils";
+import prisma from "../prisma/db";
+import { Req } from "../types";
+const jwt = require("jsonwebtoken");
 
 export const loginController = async (req: Request, res: Response) => {
 	const loginUser = await LoginUserService({
@@ -13,26 +16,69 @@ export const loginController = async (req: Request, res: Response) => {
 	});
 
 	// Generate tokens
+	// TODO: assign issuer and audience to the jwt payload 
 	const accessToken = generateAccessToken(loginUser.id);
 	const refreshToken = generateRefreshToken(loginUser.id);
 
-	res.cookie("access_token", accessToken, {
-		httpOnly: true,
-		expires: new Date(
-			Date.now() +
-				parseInt((process.env.ACCESS_COOKIE as unknown as string) ?? 0)
-		),
-	});
-
 	res.cookie("refresh_token", refreshToken, {
 		httpOnly: true,
+		secure: true,
+		sameSite: 'lax',
+		path : "/",
 		expires: new Date(
 			Date.now() +
 				parseInt((process.env.REFRESH_COOKIE as unknown as string) ?? 0)
 		),
 	});
-	return res.status(StatusCodes.OK).json({ success: true, data: loginUser });
+	return res.status(StatusCodes.OK).json({ success: true, accessToken, data: loginUser });
 };
+
+export const refreshTokenController = async (req: Request, res: Response) => {
+	const refreshToken = req.cookies.refresh_token;
+
+	if (typeof refreshToken === "undefined") {
+		return res.status(401).json({
+			success: false,
+			message: "Refresh token was not found."
+		})
+	}
+	const payload = jwt.verify(
+		refreshToken,
+		process.env.JWT_REFRESH_SECRET || "secret"
+	);
+	const user = await prisma.user.findUnique({
+			where: { id: payload.userId },
+			select: CleanDBUserSelect,
+		});
+
+	if(!user) {
+		return res.status(401).json({
+			success: false,
+			message: "User was not found."
+		})
+	}
+
+	// Generate tokens
+	const at = generateAccessToken(user.id);
+	const rt = generateRefreshToken(user.id);
+
+	res.cookie("refresh_token", rt, {
+		httpOnly: true,
+		secure: true,
+		sameSite: 'lax',
+		path : "/",
+		expires: new Date(
+			Date.now() +
+				parseInt((process.env.REFRESH_COOKIE as unknown as string) ?? 0)
+		),
+	});
+
+	return res.status(StatusCodes.OK).json({ success: true, accessToken : at , data: user});
+};
+
+export const getCurrentUser = async (req : Req, res : Response) => {
+	return res.status(StatusCodes.OK).json({ success: true, data: req.user});
+}
 
 export const registerController = async (req: Request, res: Response) => {
 	const registerUser = await RegisterUserService({
