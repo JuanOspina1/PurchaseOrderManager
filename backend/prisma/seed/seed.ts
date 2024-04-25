@@ -1,12 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { CreateUser } from "./CreateUser";
-import { CreateMainCompany } from "./CreateMainCompany";
 const prisma = new PrismaClient();
 
 async function main() {
 	try {
-		await CreateMainCompany();
-
 		await CreateUser({
 			email: "admin@main.com",
 			password: "test",
@@ -25,7 +22,7 @@ async function main() {
 			isAdmin: false,
 		});
 
-		await prisma.customer_Company.upsert({
+		await prisma.company.upsert({
 			create: {
 				address: "St 919, Zn 40",
 				city: "New York",
@@ -35,7 +32,7 @@ async function main() {
 				website: "fisheroo.com",
 				zip_code: "1234",
 				id: "cluxtonyf000010wex3x1swss",
-				owner: {
+				customers: {
 					connect: {
 						email: "normal@main.com",
 					},
@@ -49,7 +46,7 @@ async function main() {
 				state: "Legends",
 				website: "fisheroo.com",
 				zip_code: "1234",
-				owner: {
+				customers: {
 					connect: {
 						email: "normal@mail.com",
 					},
