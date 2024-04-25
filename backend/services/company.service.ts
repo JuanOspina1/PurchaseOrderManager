@@ -1,30 +1,25 @@
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ErrorWithStatus } from "../middlewear/ErrorWithStatus";
 import prisma from "../prisma/db";
-import { CleanDBUserSelect, IsAdmin, checkFields } from "../utils";
-import { User } from "../types";
+import { CleanDBUserSelect, checkFields } from "../utils";
+import { UserType } from "../types";
 
 interface GetCompanies {
-	user_id: string;
+	user: UserType;
 	company_id: string;
 }
 
-interface CompanyProps {
-	id: string;
-	user: User;
-}
-
 const company_select_fields = {
+	id: true,
 	name: true,
 	address: true,
 	phone_number: true,
 	state: true,
 	website: true,
 	zip_code: true,
-	owner: {
-		select: CleanDBUserSelect,
+	customers: {
+		select: { ...CleanDBUserSelect, is_admin: false },
 	},
-	customers: true,
 };
 
 /**
@@ -36,11 +31,8 @@ const company_select_fields = {
  * @throws ErrorWithStatus with UNAUTHORIZED status code if the user is not authorized to access the company.
  */
 
-export const GetCompanyService = async ({
-	user_id,
-	company_id,
-}: GetCompanies) => {
-	const company = await prisma.customer_Company.findUnique({
+export const GetCompanyService = async ({ user, company_id }: GetCompanies) => {
+	const company = await prisma.company.findUnique({
 		where: { id: company_id },
 		select: company_select_fields,
 	});
@@ -51,9 +43,8 @@ export const GetCompanyService = async ({
 	// Ensures that the user sending the GET request is either the company's owner, or one of the customers of the company or is an admin.
 	if (
 		!(
-			(company.owner && company.owner.id === user_id) ||
-			company.customers.find((customer) => customer.owner_id === user_id) ||
-			(await IsAdmin(user_id))
+			company.customers.find((customer) => customer.id === user.id) ||
+			user.is_admin
 		)
 	)
 		throw new ErrorWithStatus(
@@ -68,32 +59,29 @@ export const GetCompanyService = async ({
  * Retrieves a list of companies based on the user ID.
  * If the user is an admin, all companies are returned.
  * If the user is not an admin, only the companies owned by the user or associated with the user as a customer are returned.
- * @param user_id The ID of the user
+ * @param user The ID of the user
  * @returns A promise that resolves to an array of companies
  */
-export const GetCompaniesService = async (user_id: string) => {
-	if (await IsAdmin(user_id)) {
-		return await prisma.customer_Company.findMany({
+export const GetCompaniesService = async (user: UserType) => {
+	if (user.is_admin) {
+		return await prisma.company.findMany({
 			where: {},
-			select: { id: true, ...company_select_fields },
+			select: company_select_fields,
 		});
 	} else {
-		return await prisma.customer_Company.findMany({
+		return await prisma.company.findMany({
 			where: {
 				OR: [
 					{
-						owner_id: user_id,
-					},
-					{
 						customers: {
 							some: {
-								owner_id: user_id,
+								id: user.id,
 							},
 						},
 					},
 				],
 			},
-			select: { id: true, ...company_select_fields },
+			select: company_select_fields,
 		});
 	}
 };
@@ -116,7 +104,7 @@ export const GetCompaniesService = async (user_id: string) => {
  */
 export const CreateCompanyService = async ({
 	body,
-	user_id,
+	user,
 }: {
 	body: {
 		name: string;
@@ -126,26 +114,16 @@ export const CreateCompanyService = async ({
 		state: string;
 		website: string;
 		zip_code: string;
-		owner_id: string;
 	};
-	user_id: string;
+	user: UserType;
 }) => {
-	if (!(await IsAdmin(user_id)))
+	if (!user.is_admin)
 		throw new ErrorWithStatus(
 			StatusCodes.UNAUTHORIZED,
 			ReasonPhrases.UNAUTHORIZED
 		);
 
-	const {
-		name,
-		address,
-		phone_number,
-		city,
-		state,
-		website,
-		zip_code,
-		owner_id,
-	} = body;
+	const { name, address, phone_number, city, state, website, zip_code } = body;
 
 	const requiredFields = checkFields([
 		{ name: "name", field: name },
@@ -155,28 +133,28 @@ export const CreateCompanyService = async ({
 		{ name: "state", field: state },
 		{ name: "website", field: website },
 		{ name: "zip_code", field: zip_code },
-		{ name: "owner_id", field: owner_id },
 	]);
 
 	// TODO: phone number validation
 	// TODO: customer company upon creation
 
-	const owner = await prisma.user.findUnique({
-		where: { id: owner_id },
-		include: { c_company: true },
-	});
+	// TODO: support being able to add customers
+	// const owner = await prisma.user.findUnique({
+	// 	where: { id: owner_id },
+	// 	include: { c_company: true },
+	// });
 
-	if (!owner)
-		throw new ErrorWithStatus(
-			StatusCodes.BAD_REQUEST,
-			"Invalid owner_id provided."
-		);
-	// TODO: figure out if a user can only own one company.
-	if (owner.c_company && owner.c_company.id !== null)
-		throw new ErrorWithStatus(
-			StatusCodes.BAD_REQUEST,
-			"User already owns a company."
-		);
+	// if (!owner)
+	// 	throw new ErrorWithStatus(
+	// 		StatusCodes.BAD_REQUEST,
+	// 		"Invalid owner_id provided."
+	// 	);
+	// // TODO: figure out if a user can only own one company.
+	// if (owner.c_company && owner.c_company.id !== null)
+	// 	throw new ErrorWithStatus(
+	// 		StatusCodes.BAD_REQUEST,
+	// 		"User already owns a company."
+	// 	);
 
 	if (requiredFields !== null)
 		throw new ErrorWithStatus(
@@ -184,9 +162,8 @@ export const CreateCompanyService = async ({
 			"Missing required fields " + requiredFields.join(", ")
 		);
 
-	const company = await prisma.customer_Company.create({
+	const company = await prisma.company.create({
 		data: {
-			owner_id,
 			name,
 			address,
 			phone_number,
@@ -195,7 +172,7 @@ export const CreateCompanyService = async ({
 			website,
 			zip_code,
 		},
-		select: { id: true, ...company_select_fields },
+		select: company_select_fields,
 	});
 
 	return company;
@@ -209,66 +186,37 @@ export const CreateCompanyService = async ({
  * @returns The updated company object.
  * @throws ErrorWithStatus - If the company is not found, the user is not authorized, or an invalid owner_id is provided.
  */
+
 export const EditCompanyService = async ({
 	company_id,
-	user_id,
+	user,
 	body,
 }: {
 	company_id: string;
-	user_id: string;
+	user: UserType;
 	body: any;
 }) => {
-	const company = await prisma.customer_Company.findUnique({
+	const company = await prisma.company.findUnique({
 		where: { id: company_id },
 	});
-
-	const userIsAdmin = await IsAdmin(user_id);
 
 	if (!company)
 		throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "Company not found.");
 
-	if (!(userIsAdmin || company.owner_id === user_id))
+	if (!user.is_admin)
 		throw new ErrorWithStatus(
 			StatusCodes.UNAUTHORIZED,
 			ReasonPhrases.UNAUTHORIZED
 		);
 
-	const {
-		owner_id,
-		name,
-		address,
-		phone_number,
-		city,
-		state,
-		website,
-		zip_code,
-	} = body;
-
-	if (owner_id && !userIsAdmin)
-		throw new ErrorWithStatus(
-			StatusCodes.UNAUTHORIZED,
-			"You do not have permission to change the owner of this company."
-		);
-
-	if (owner_id) {
-		const userExists = prisma.user.findUnique({
-			where: { id: owner_id },
-		});
-
-		if (!userExists)
-			throw new ErrorWithStatus(
-				StatusCodes.BAD_REQUEST,
-				"Invalid owner_id provided."
-			);
-	}
+	const { name, address, phone_number, city, state, website, zip_code } = body;
 
 	try {
-		return await prisma.customer_Company.update({
+		return await prisma.company.update({
 			where: {
 				id: company_id,
 			},
 			data: {
-				owner_id: owner_id && owner_id,
 				name: name && name,
 				address: address && address,
 				phone_number: phone_number && phone_number,
@@ -280,11 +228,6 @@ export const EditCompanyService = async ({
 			select: company_select_fields,
 		});
 	} catch (error: any) {
-		if (error.code === "P2002" && error.meta.target.includes("owner_id"))
-			throw new ErrorWithStatus(
-				StatusCodes.BAD_REQUEST,
-				"owner provided is already associated with a company."
-			);
 		process.env.NODE_ENV === "development" && console.log(error);
 		throw new ErrorWithStatus(
 			StatusCodes.INTERNAL_SERVER_ERROR,
@@ -300,14 +243,23 @@ export const EditCompanyService = async ({
  * @returns The updated company object with the added customers.
  * @throws ErrorWithStatus with status code 404 if the company is not found.
  */
+
 export const AddCustomersToCompanyService = async ({
 	company_id,
 	customer_ids,
+	user,
 }: {
 	company_id: string;
 	customer_ids: string[];
+	user: UserType;
 }) => {
-	const company = await prisma.customer_Company.findUnique({
+	if (!user.is_admin)
+		throw new ErrorWithStatus(
+			StatusCodes.UNAUTHORIZED,
+			ReasonPhrases.UNAUTHORIZED
+		);
+
+	const company = await prisma.company.findUnique({
 		where: { id: company_id },
 		include: { customers: true },
 	});
@@ -324,10 +276,7 @@ export const AddCustomersToCompanyService = async ({
 
 	const customersToAdd = customer_ids.filter((customer_id) => {
 		// Returns customers that are not already added to the company
-		return !(
-			customer_id === company_id ||
-			company.customers.find((customer) => customer.id === customer_id)
-		);
+		return !company.customers.find((customer) => customer.id === customer_id);
 	});
 
 	if (customersToAdd.length === 0)
@@ -338,7 +287,7 @@ export const AddCustomersToCompanyService = async ({
 
 	try {
 		// Add customers to the company
-		return await prisma.customer_Company.update({
+		return await prisma.company.update({
 			where: { id: company_id },
 			data: {
 				customers: {
@@ -370,14 +319,23 @@ export const AddCustomersToCompanyService = async ({
  * @returns {Promise<Object>} - A promise that resolves to the updated company object.
  * @throws {ErrorWithStatus} - If the company is not found.
  */
+
 export const RemoveCustomersFromCompanyService = async ({
 	company_id,
 	customer_ids,
+	user,
 }: {
 	company_id: string;
 	customer_ids: string[];
+	user: UserType;
 }) => {
-	const company = await prisma.customer_Company.findUnique({
+	if (!user.is_admin)
+		throw new ErrorWithStatus(
+			StatusCodes.UNAUTHORIZED,
+			ReasonPhrases.UNAUTHORIZED
+		);
+
+	const company = await prisma.company.findUnique({
 		where: { id: company_id },
 		include: { customers: true },
 	});
@@ -404,7 +362,7 @@ export const RemoveCustomersFromCompanyService = async ({
 		);
 
 	// Remove customers from the company
-	return await prisma.customer_Company.update({
+	return await prisma.company.update({
 		where: { id: company_id },
 		data: {
 			customers: {
@@ -427,26 +385,26 @@ export const RemoveCustomersFromCompanyService = async ({
  */
 export const DeleteCompanyService = async ({
 	id,
-	user_id,
+	user,
 }: {
 	id: string;
-	user_id: string;
+	user: UserType;
 }) => {
-	if (!(await IsAdmin(user_id)))
+	if (!user.is_admin)
 		throw new ErrorWithStatus(
 			StatusCodes.UNAUTHORIZED,
 			ReasonPhrases.UNAUTHORIZED
 		);
 
 	try {
-		await prisma.customer_Company.delete({
+		await prisma.company.delete({
 			where: { id: id },
 		});
 		return;
 	} catch (error: any) {
 		process.env.NODE_ENV === "development" && console.log(error);
 		if (error.code === `P2025`)
-			throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "User not found.");
+			throw new ErrorWithStatus(StatusCodes.NOT_FOUND, "Company not found.");
 		else
 			throw new ErrorWithStatus(
 				StatusCodes.INTERNAL_SERVER_ERROR,
