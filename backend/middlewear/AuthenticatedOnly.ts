@@ -14,7 +14,7 @@ const AuthenticatedOnly = async (
 	try {
 		let accessToken = req.cookies.access_token;
 		let refreshToken = req.cookies.refresh_token;
-
+		let userId;
 		// If access token is missing or expired, try refreshing it with the refresh token
 		if (!accessToken) {
 			process.env.NODE_ENV === "development" &&
@@ -32,8 +32,7 @@ const AuthenticatedOnly = async (
 			);
 
 			// TODO: blacklisting? expiry?
-			const userId = decodedRefreshToken.userId;
-			req.user = { id: userId };
+			userId = decodedRefreshToken.userId;
 
 			accessToken = generateAccessToken(userId);
 
@@ -52,11 +51,11 @@ const AuthenticatedOnly = async (
 				accessToken,
 				process.env.JWT_ACCESS_SECRET
 			);
-			req.user = { id: decodedAccessToken.userId };
+			userId = decodedAccessToken.userId;
 		}
 
 		const user = await prisma.user.findUnique({
-			where: { id: req.user.id },
+			where: { id: userId },
 			select: CleanDBUserSelect,
 		});
 
