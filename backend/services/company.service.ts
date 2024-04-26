@@ -87,20 +87,12 @@ export const GetCompaniesService = async (user: UserType) => {
 };
 
 /**
- * Creates a new company service.
- * @param {Object} options - The options for creating a company service.
- * @param {Object} options.body - The body of the request containing company details.
- * @param {string} options.body.name - The name of the company.
- * @param {string} options.body.address - The address of the company.
- * @param {number} options.body.phone_number - The phone number of the company.
- * @param {string} options.body.city - The city of the company.
- * @param {string} options.body.state - The state of the company.
- * @param {string} options.body.website - The website of the company.
- * @param {string} options.body.zip_code - The zip code of the company.
- * @param {string} options.body.owner_id - The ID of the owner of the company.
- * @param {string} options.user_id - The ID of the user making the request.
- * @returns {Promise<Object>} The created company.
- * @throws {ErrorWithStatus} If the user is not authorized or if required fields are missing.
+ * Creates a new company with the provided information.
+ *
+ * @param body - The company details including name, address, phone number, city, state, website, zip code, and customers.
+ * @param user - The user performing the operation.
+ * @returns The newly created company.
+ * @throws ErrorWithStatus - If the user is not authorized or if there are missing required fields or invalid customer IDs.
  */
 export const CreateCompanyService = async ({
 	body,
@@ -114,6 +106,7 @@ export const CreateCompanyService = async ({
 		state: string;
 		website: string;
 		zip_code: string;
+		customers: string[];
 	};
 	user: UserType;
 }) => {
@@ -123,7 +116,16 @@ export const CreateCompanyService = async ({
 			ReasonPhrases.UNAUTHORIZED
 		);
 
-	const { name, address, phone_number, city, state, website, zip_code } = body;
+	const {
+		name,
+		address,
+		phone_number,
+		city,
+		state,
+		website,
+		zip_code,
+		customers,
+	} = body;
 
 	const requiredFields = checkFields([
 		{ name: "name", field: name },
@@ -136,31 +138,30 @@ export const CreateCompanyService = async ({
 	]);
 
 	// TODO: phone number validation
-	// TODO: customer company upon creation
-
-	// TODO: support being able to add customers
-	// const owner = await prisma.user.findUnique({
-	// 	where: { id: owner_id },
-	// 	include: { c_company: true },
-	// });
-
-	// if (!owner)
-	// 	throw new ErrorWithStatus(
-	// 		StatusCodes.BAD_REQUEST,
-	// 		"Invalid owner_id provided."
-	// 	);
-	// // TODO: figure out if a user can only own one company.
-	// if (owner.c_company && owner.c_company.id !== null)
-	// 	throw new ErrorWithStatus(
-	// 		StatusCodes.BAD_REQUEST,
-	// 		"User already owns a company."
-	// 	);
 
 	if (requiredFields !== null)
 		throw new ErrorWithStatus(
 			StatusCodes.BAD_REQUEST,
 			"Missing required fields " + requiredFields.join(", ")
 		);
+
+	if (customers) {
+		const err: string[] = [];
+		await Promise.all(
+			customers.map(async (customer_id) => {
+				const user = await prisma.user.findUnique({
+					where: { id: customer_id },
+				});
+				if (!user) err.unshift(customer_id);
+			})
+		);
+
+		if (err.length > 0)
+			throw new ErrorWithStatus(
+				StatusCodes.BAD_REQUEST,
+				"Invalid customer id(s) provided." + " " + err.join(", ")
+			);
+	}
 
 	const company = await prisma.company.create({
 		data: {
@@ -171,6 +172,12 @@ export const CreateCompanyService = async ({
 			state,
 			website,
 			zip_code,
+			customers:
+				customers && customers.length > 0
+					? {
+							connect: customers.map((customer_id) => ({ id: customer_id })),
+					  }
+					: undefined,
 		},
 		select: company_select_fields,
 	});
