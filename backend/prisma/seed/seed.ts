@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { CreateUser } from "./CreateUser";
 const prisma = new PrismaClient();
 
@@ -46,11 +46,6 @@ async function main() {
 				state: "Legends",
 				website: "fisheroo.com",
 				zip_code: "1234",
-				customers: {
-					connect: {
-						email: "normal@mail.com",
-					},
-				},
 			},
 			where: {
 				id: "cluxtonyf000010wex3x1swss",
