@@ -83,7 +83,6 @@ export const createUserService = async ({ body, activeUser }: newUserBody) => {
 			},
 			select: {
 				...CleanDBUserSelect,
-				orders: false,
 				address: false,
 			},
 		});
