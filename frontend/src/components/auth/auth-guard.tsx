@@ -24,13 +24,14 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
   React.useEffect(() => {
     const checkUserSession = async () => {
       try {
-        await client<ApiResponse<User>>('http://localhost:5000/user');
+        await client<ApiResponse<User>>('/user');
       } catch (err) {
         if (isAxiosError(err)) {
           router.replace(paths.auth.signIn);
         }
       }
     };
+
     checkUserSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Expected
   }, []);
