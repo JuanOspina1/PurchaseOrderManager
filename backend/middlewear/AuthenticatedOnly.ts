@@ -4,6 +4,7 @@ import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { Req } from "../types";
 import { CleanDBUserSelect, generateAccessToken } from "../utils";
 import prisma from "../prisma/db";
+import { getUserService } from "../services/user.service";
 const jwt = require("jsonwebtoken");
 
 const AuthenticatedOnly = async (
@@ -23,7 +24,10 @@ const AuthenticatedOnly = async (
 				token,
 				process.env.JWT_ACCESS_SECRET
 			);
-			req.user = { id: decodedAccessToken.userId };
+
+			const user = await getUserService(decodedAccessToken.userId);
+
+			req.user = { id : decodedAccessToken.userId, ...user};
 		}
 
 		const user = await prisma.user.findUnique({
