@@ -1,12 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { CreateUser } from "./CreateUser";
-import { CreateMainCompany } from "./CreateMainCompany";
 const prisma = new PrismaClient();
 
 async function main() {
 	try {
-		await CreateMainCompany();
-
 		await CreateUser({
 			email: "admin@main.com",
 			password: "test",
@@ -23,6 +20,36 @@ async function main() {
 			first_name: "Normal",
 			last_name: "User",
 			isAdmin: false,
+		});
+
+		await prisma.company.upsert({
+			create: {
+				address: "St 919, Zn 40",
+				city: "New York",
+				name: "Fisheroo",
+				phone_number: 1234567,
+				state: "Legends",
+				website: "fisheroo.com",
+				zip_code: "1234",
+				id: "cluxtonyf000010wex3x1swss",
+				customers: {
+					connect: {
+						email: "normal@main.com",
+					},
+				},
+			},
+			update: {
+				address: "St 919, Zn 40",
+				city: "New York",
+				name: "Fisheroo",
+				phone_number: 1234567,
+				state: "Legends",
+				website: "fisheroo.com",
+				zip_code: "1234",
+			},
+			where: {
+				id: "cluxtonyf000010wex3x1swss",
+			},
 		});
 
 		console.log("Successfully seeded db.");

@@ -23,11 +23,11 @@ const AuthenticatedOnly = async (
 				token,
 				process.env.JWT_ACCESS_SECRET
 			);
-			req.user = { id: decodedAccessToken.userId };
+			userId = decodedAccessToken.userId;
 		}
 
 		const user = await prisma.user.findUnique({
-			where: { id: req.user.id },
+			where: { id: userId },
 			select: CleanDBUserSelect,
 		});
 
