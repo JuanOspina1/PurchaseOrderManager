@@ -1,14 +1,12 @@
 import Wrapper from "../middlewear/Wrapper";
 import AuthenticatedOnly from "../middlewear/AuthenticatedOnly";
 import {
-	AddCustomersToCompany,
-	CreateCompany,
-	DeleteCompany,
-	EditCompany,
-	GetCompanies,
-	GetCompany,
-	RemoveCustomersFromCompany,
-} from "../controllers/company.controller";
+	CreateCompanyService,
+	DeleteCompanyService,
+	EditCompanyService,
+	GetCompaniesService,
+	GetCompanyService,,
+} from "../controllers/customer.controller";
 
 const express = require("express");
 const Router = express.Router();

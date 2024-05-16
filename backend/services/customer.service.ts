@@ -4,7 +4,8 @@ import prisma from "../prisma/db";
 import { CleanDBUserSelect, checkFields } from "../utils";
 import { UserType } from "../types";
 
-// THIS NEEDS TO BE REFACTORED TO ONLY GET COMPANY - EDIT COMPANY - AND ADD USER TO COMPANY
+//THIS NEEDS TO BE REFACTORED FOR CUSTOMERS INSTEAD OF COMPANY
+
 interface GetCompanies {
 	user: UserType;
 	company_id: string;
