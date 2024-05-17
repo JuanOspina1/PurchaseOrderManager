@@ -52,6 +52,37 @@ async function main() {
 			},
 		});
 
+		// NEED TO FIGURE OUT HOW TO ADD CUSTOMER_COMPANY TO PRISMA CLIENT
+		// await prisma.customer_company.upsert({
+		// 	create: {
+		// 		address: "St 919, Zn 40",
+		// 		city: "New York",
+		// 		name: "CustomerFish",
+		// 		phone_number: 1234567,
+		// 		state: "Florida",
+		// 		website: "customerfish.com",
+		// 		zip_code: "1234",
+		// 		id: "5d6ab5c2-0f8a-44cc-bf05-545c53d219ba",
+		// 		customers: {
+		// 			connect: {
+		// 				email: "normal@main.com",
+		// 			},
+		// 		},
+		// 	},
+		// 	update: {
+		// 		address: "St 919, Zn 40",
+		// 		city: "New York",
+		// 		name: "Fisheroo",
+		// 		phone_number: 1234567,
+		// 		state: "Legends",
+		// 		website: "fisheroo.com",
+		// 		zip_code: "1234",
+		// 	},
+		// 	where: {
+		// 		id: "cluxtonyf000010wex3x1swss",
+		// 	},
+		// });
+
 		console.log("Successfully seeded db.");
 	} catch (error) {
 		console.log(error);
