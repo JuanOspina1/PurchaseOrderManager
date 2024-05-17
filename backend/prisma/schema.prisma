@@ -11,16 +11,18 @@ datasource db {
 }
 
 model User {
-  id         String  @id @default(cuid())
-  email      String  @unique
-  first_name String
-  last_name  String
-  password   String
-  address    String?
-  is_admin   Boolean @default(false)
+  id                 String            @id @default(cuid())
+  email              String            @unique
+  first_name         String
+  last_name          String
+  password           String
+  address            String?
+  is_admin           Boolean           @default(false)
   // orders     Order[]
-  company    Company? @relation(fields: [company_id], references: [id])
-  company_id String?
+  company            Company?          @relation(fields: [company_id], references: [id])
+  company_id         String?
+  Customer_Company   Customer_Company? @relation(fields: [customer_CompanyId], references: [id])
+  customer_CompanyId String?
 }
 
 model Company {
@@ -35,19 +37,19 @@ model Company {
   website      String
 }
 
-// model Customer_Company {
-//   id           String  @id @default(cuid())
-//   name         String
-//   address      String
-//   city         String
-//   state        String
-//   zip_code     String
-//   phone_number Int
-//   website      String
-//   customers    User[]
-//   company      Company @relation(fields: [company_id], references: [id])
-//   company_id   String
-// }
+model Customer_Company {
+  id           String @id @default(cuid())
+  name         String
+  address      String
+  city         String
+  state        String
+  zip_code     String
+  phone_number Int
+  website      String
+  users        User[]
+  // company      Company @relation(fields: [company_id], references: [id])
+  company_id   String
+}
 
 // model Order {
 //   id                String      @id @default(cuid())
