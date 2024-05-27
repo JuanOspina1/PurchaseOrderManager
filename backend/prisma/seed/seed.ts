@@ -32,11 +32,6 @@ async function main() {
 				website: "fisheroo.com",
 				zip_code: "1234",
 				id: "cluxtonyf000010wex3x1swss",
-				customers: {
-					connect: {
-						email: "normal@main.com",
-					},
-				},
 			},
 			update: {
 				address: "St 919, Zn 40",
