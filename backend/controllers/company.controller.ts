@@ -6,6 +6,7 @@ import {
 	EditCompanyService,
 	GetCompanyService,
 } from "../services/company.service";
+import { MAIN_COMPANY_ID } from "../utils";
 
 export const CreateCompany = async (req: Req, res: Response) => {
 	const { user, body } = req;
@@ -20,11 +21,7 @@ export const CreateCompany = async (req: Req, res: Response) => {
 };
 
 export const GetCompany = async (req: Req, res: Response) => {
-	const {
-		params: { id },
-		user,
-	} = req;
-	const Company = await GetCompanyService(id);
+	const Company = await GetCompanyService(MAIN_COMPANY_ID);
 	return res.status(StatusCodes.OK).json({ success: true, data: Company });
 };
 
@@ -43,9 +40,8 @@ export const GetCompany = async (req: Req, res: Response) => {
 // };
 
 export const EditCompany = async (req: Req, res: Response) => {
-	const { id } = req.params;
 	const Company = await EditCompanyService({
-		company_id: id,
+		company_id: MAIN_COMPANY_ID,
 		body: req.body,
 		user: req.user,
 	});

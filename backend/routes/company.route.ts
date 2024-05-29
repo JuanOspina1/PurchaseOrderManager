@@ -8,7 +8,7 @@ const Router = express.Router();
 
 // Router.route("/").post(AuthenticatedOnly, adminOnly, Wrapper(CreateCompany));
 
-Router.route("/:id")
+Router.route("/")
 	.get(AuthenticatedOnly, Wrapper(GetCompany))
 	.patch(AuthenticatedOnly, adminOnly, Wrapper(EditCompany));
 

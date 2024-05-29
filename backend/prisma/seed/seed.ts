@@ -1,5 +1,6 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { CreateUser } from "./CreateUser";
+import { MAIN_COMPANY_ID } from "../../utils";
 const prisma = new PrismaClient();
 
 async function main() {
@@ -31,7 +32,7 @@ async function main() {
 				state: "Legends",
 				website: "fisheroo.com",
 				zip_code: "1234",
-				id: "cluxtonyf000010wex3x1swss",
+				id: MAIN_COMPANY_ID,
 			},
 			update: {
 				address: "St 919, Zn 40",
@@ -43,7 +44,7 @@ async function main() {
 				zip_code: "1234",
 			},
 			where: {
-				id: "cluxtonyf000010wex3x1swss",
+				id: MAIN_COMPANY_ID,
 			},
 		});
 
