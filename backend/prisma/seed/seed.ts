@@ -23,8 +23,9 @@ async function main() {
 			isAdmin: false,
 		});
 
-		await prisma.company.upsert({
-			create: {
+		await prisma.company.deleteMany();
+		await prisma.company.create({
+			data: {
 				address: "St 919, Zn 40",
 				city: "New York",
 				name: "Fisheroo",
@@ -32,18 +33,6 @@ async function main() {
 				state: "Legends",
 				website: "fisheroo.com",
 				zip_code: "1234",
-				id: MAIN_COMPANY_ID,
-			},
-			update: {
-				address: "St 919, Zn 40",
-				city: "New York",
-				name: "Fisheroo",
-				phone_number: 1234567,
-				state: "Legends",
-				website: "fisheroo.com",
-				zip_code: "1234",
-			},
-			where: {
 				id: MAIN_COMPANY_ID,
 			},
 		});
