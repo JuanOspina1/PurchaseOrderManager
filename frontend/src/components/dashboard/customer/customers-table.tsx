@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -22,6 +20,16 @@ function noop(): void {
   // do nothing
 }
 
+async function getCustomers() {
+  const res = await fetch('http://localhost:5000/user_company/');
+
+  return res.json();
+}
+
+function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
+  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+}
+
 export interface Customer {
   id: string;
   avatar: string;
@@ -32,27 +40,33 @@ export interface Customer {
   createdAt: Date;
 }
 
+// NOT NEEDED AS NO PROPS WILL BE BROUGHT IN
 interface CustomersTableProps {
-  count?: number;
+  paginatedCustomers?: number;
   page?: number;
   rows?: Customer[];
   rowsPerPage?: number;
 }
 
 export function CustomersTable({
-  count = 0,
-  rows = [],
+  // paginatedCustomers = 0,
+  //count = 0 -> this is now paginatedCustomers
+  // rows = [],
   page = 0,
   rowsPerPage = 0,
 }: CustomersTableProps): React.JSX.Element {
+  const customers = React.use(getCustomers());
+
+  const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
+
   const rowIds = React.useMemo(() => {
-    return rows.map((customer) => customer.id);
-  }, [rows]);
+    return paginatedCustomers.map((customer: Customer) => customer.id);
+  }, [customers]);
 
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
 
-  const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
-  const selectedAll = rows.length > 0 && selected?.size === rows.length;
+  const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < customers.length;
+  const selectedAll = customers.length > 0 && selected?.size === customers.length;
 
   return (
     <Card>
@@ -81,35 +95,35 @@ export function CustomersTable({
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => {
-              const isSelected = selected?.has(row.id);
+            {customers.map((customer: Customer) => {
+              const isSelected = selected?.has(customer.id);
 
               return (
-                <TableRow hover key={row.id} selected={isSelected}>
+                <TableRow hover key={customer.id} selected={isSelected}>
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={isSelected}
                       onChange={(event) => {
                         if (event.target.checked) {
-                          selectOne(row.id);
+                          selectOne(customer.id);
                         } else {
-                          deselectOne(row.id);
+                          deselectOne(customer.id);
                         }
                       }}
                     />
                   </TableCell>
                   <TableCell>
                     <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      <Avatar src={row.avatar} />
-                      <Typography variant="subtitle2">{row.name}</Typography>
+                      <Avatar src={customer.avatar} />
+                      <Typography variant="subtitle2">{customer.name}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{customer.email}</TableCell>
                   <TableCell>
-                    {row.address.city}, {row.address.state}, {row.address.country}
+                    {customer.address.city}, {customer.address.state}, {customer.address.country}
                   </TableCell>
-                  <TableCell>{row.phone}</TableCell>
-                  <TableCell>{dayjs(row.createdAt).format('MMM D, YYYY')}</TableCell>
+                  <TableCell>{customer.phone}</TableCell>
+                  <TableCell>{dayjs(customer.createdAt).format('MMM D, YYYY')}</TableCell>
                 </TableRow>
               );
             })}
@@ -119,7 +133,7 @@ export function CustomersTable({
       <Divider />
       <TablePagination
         component="div"
-        count={count}
+        count={paginatedCustomers.length}
         onPageChange={noop}
         onRowsPerPageChange={noop}
         page={page}

@@ -111,10 +111,10 @@ const customers = [
 ] satisfies Customer[];
 
 export default function Page(): React.JSX.Element {
-  const page = 0;
-  const rowsPerPage = 5;
+  // const page = 0;
+  // const rowsPerPage = 5;
 
-  const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
+  // const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
   const [toggleForm, setToggleForm] = React.useState(true);
 
@@ -160,10 +160,10 @@ export default function Page(): React.JSX.Element {
       {toggleForm ? <CustomersFilters /> : null}
       {toggleForm ? (
         <CustomersTable
-          count={paginatedCustomers.length}
-          page={page}
-          rows={paginatedCustomers}
-          rowsPerPage={rowsPerPage}
+        // count={paginatedCustomers.length} - > this is now just paginatedCustomers in the CustomersTable
+        // page={page}
+        // rows={paginatedCustomers}
+        // rowsPerPage={rowsPerPage}
         />
       ) : (
         <CustomersAddForm handleCustomerForm={handleCustomerForm} />
@@ -172,6 +172,6 @@ export default function Page(): React.JSX.Element {
   );
 }
 
-function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-}
+// function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
+//   return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+// }
