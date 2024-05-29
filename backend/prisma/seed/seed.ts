@@ -37,36 +37,48 @@ async function main() {
 			},
 		});
 
-		// NEED TO FIGURE OUT HOW TO ADD CUSTOMER_COMPANY TO PRISMA CLIENT
-		// await prisma.customer_company.upsert({
-		// 	create: {
-		// 		address: "St 919, Zn 40",
-		// 		city: "New York",
-		// 		name: "CustomerFish",
-		// 		phone_number: 1234567,
-		// 		state: "Florida",
-		// 		website: "customerfish.com",
-		// 		zip_code: "1234",
-		// 		id: "5d6ab5c2-0f8a-44cc-bf05-545c53d219ba",
-		// 		customers: {
-		// 			connect: {
-		// 				email: "normal@main.com",
-		// 			},
-		// 		},
-		// 	},
-		// 	update: {
-		// 		address: "St 919, Zn 40",
-		// 		city: "New York",
-		// 		name: "Fisheroo",
-		// 		phone_number: 1234567,
-		// 		state: "Legends",
-		// 		website: "fisheroo.com",
-		// 		zip_code: "1234",
-		// 	},
-		// 	where: {
-		// 		id: "cluxtonyf000010wex3x1swss",
-		// 	},
-		// });
+		// model Customer_Company {
+		// 	id           String @id @default(cuid())
+		// 	name         String
+		// 	address      String
+		// 	city         String
+		// 	state        String
+		// 	zip_code     String
+		// 	phone_number Int
+		// 	website      String
+		// 	customers        User[]
+		//   }
+
+		await prisma.customer_Company.create({
+			data: {
+				address: "1314 NW 42nd Ave",
+				city: "Miami",
+				name: "MiamiFish",
+				phone_number: 1234567,
+				state: "FL",
+				website: "MiamiFish.com",
+				zip_code: "33143",
+				customers: {
+					createMany: {
+						data: [
+							{
+								email: "one@main.com",
+								first_name: "One",
+								last_name: "User",
+								// password: await argon2.hash("password"),
+								password: "test",
+							},
+							{
+								email: "two@main.com",
+								first_name: "One",
+								last_name: "User",
+								password: "test",
+							},
+						],
+					},
+				},
+			},
+		});
 
 		console.log("Successfully seeded db.");
 	} catch (error) {
