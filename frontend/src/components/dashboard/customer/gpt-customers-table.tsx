@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Checkbox from '@mui/material/Checkbox';
@@ -13,10 +12,8 @@ import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { isAxiosError } from 'axios';
-import dayjs from 'dayjs';
 
 import { ApiResponse } from '@/types/api-response';
-import { User } from '@/types/user';
 import { useSelection } from '@/hooks/use-selection';
 import { useAxios } from '@/hooks/useAxios';
 
@@ -24,23 +21,10 @@ function noop(): void {
   // do nothing
 }
 
-const client = useAxios();
-
 function applyPagination(customers: Customer[], page: number, rowsPerPage: number): Customer[] {
   return customers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 }
 
-export interface Customer {
-  id: string;
-  avatar: string;
-  name: string;
-  email: string;
-  address: { city: string; state: string; country: string; street: string };
-  phone: string;
-  createdAt: Date;
-}
-
-// NOT NEEDED AS NO PROPS WILL BE BROUGHT IN
 interface CustomersTableProps {
   paginatedCustomers?: number;
   page?: number;
@@ -48,37 +32,64 @@ interface CustomersTableProps {
   rowsPerPage?: number;
 }
 
-export function CustomersTable({
-  // paginatedCustomers = 0,
-  //count = 0 -> this is now paginatedCustomers
-  // rows = [],
-  page = 0,
-  rowsPerPage = 0,
-}: CustomersTableProps): React.JSX.Element {
+interface Customer {
+  id: string;
+  name: string;
+  address: string;
+  zip_code: string;
+  city: string;
+  state: string;
+  website: string;
+  phone_number: string;
+  customers: { id: string }[];
+  _count: { customers: number };
+}
+
+// interface ApiResponseData {
+//   message: string;
+//   data: Customer[];
+// }
+
+export function GPTCustomersTable({ page = 0, rowsPerPage = 10 }: CustomersTableProps): React.JSX.Element {
   const [customers, setCustomers] = React.useState<Customer[]>([]);
+  const client = useAxios(); // Ensure useAxios is called at the top level of the functional component
 
   React.useEffect(() => {
     const getCustomers = async () => {
       try {
-        const res = await client<ApiResponse<User>>('http://localhost:5000/user_company');
-        console.log(res);
-        setCustomers(res.data);
+        const res = await client.get<ApiResponse<Customer[]>>('http://localhost:5000/user_company');
+
+        const customersData: Customer[] = res.data.data.map((customerCompany) => ({
+          id: customerCompany.id,
+          name: customerCompany.name,
+          email: '', // Assuming no email in the response, you can adjust this if needed
+          address: customerCompany.address,
+          city: customerCompany.city,
+          state: customerCompany.state,
+          zip_code: customerCompany.zip_code,
+          phone_number: customerCompany.phone_number.toString(),
+          website: customerCompany.website,
+          customers: customerCompany.customers,
+          _count: customerCompany._count,
+          createdAt: new Date(), // Assuming current date as createdAt, adjust if needed
+        }));
+        console.log(customersData);
+
+        setCustomers(customersData);
       } catch (err) {
         if (isAxiosError(err)) {
-          // router.replace(paths.auth.signIn);
           console.log(err);
         }
       }
     };
-    // checkUserSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Expected
-  }, []);
+    getCustomers();
+  }, [client]);
 
   const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
   const rowIds = React.useMemo(() => {
     return paginatedCustomers.map((customer: Customer) => customer.id);
-  }, [customers]);
+  }, [paginatedCustomers]);
 
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
 
@@ -105,14 +116,13 @@ export function CustomersTable({
                 />
               </TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell>City</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Phone</TableCell>
-              <TableCell>Signed Up</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {customers.map((customer: Customer) => {
+            {paginatedCustomers.map((customer: Customer) => {
               const isSelected = selected?.has(customer.id);
 
               return (
@@ -131,16 +141,14 @@ export function CustomersTable({
                   </TableCell>
                   <TableCell>
                     <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      <Avatar src={customer.avatar} />
                       <Typography variant="subtitle2">{customer.name}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>{customer.email}</TableCell>
+                  <TableCell>{customer.city}</TableCell>
                   <TableCell>
-                    {customer.address.city}, {customer.address.state}, {customer.address.country}
+                    {customer.address}, {customer.state}
                   </TableCell>
-                  <TableCell>{customer.phone}</TableCell>
-                  <TableCell>{dayjs(customer.createdAt).format('MMM D, YYYY')}</TableCell>
+                  <TableCell>{customer.phone_number}</TableCell>
                 </TableRow>
               );
             })}
@@ -150,7 +158,7 @@ export function CustomersTable({
       <Divider />
       <TablePagination
         component="div"
-        count={paginatedCustomers.length}
+        count={customers.length}
         onPageChange={noop}
         onRowsPerPageChange={noop}
         page={page}

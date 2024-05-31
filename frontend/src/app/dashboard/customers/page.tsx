@@ -15,6 +15,7 @@ import { CustomersAddForm } from '@/components/dashboard/customer/customers-addf
 import { CustomersFilters } from '@/components/dashboard/customer/customers-filters';
 import { CustomersTable } from '@/components/dashboard/customer/customers-table';
 import type { Customer } from '@/components/dashboard/customer/customers-table';
+import { GPTCustomersTable } from '@/components/dashboard/customer/gpt-customers-table';
 
 const customers = [
   {
@@ -159,13 +160,14 @@ export default function Page(): React.JSX.Element {
       </Stack>
       {toggleForm ? <CustomersFilters /> : null}
       {toggleForm ? (
-        <CustomersTable
-        // count={paginatedCustomers.length} - > this is now just paginatedCustomers in the CustomersTable
-        // page={page}
-        // rows={paginatedCustomers}
-        // rowsPerPage={rowsPerPage}
-        />
+        <GPTCustomersTable />
       ) : (
+        // <CustomersTable
+        // // count={paginatedCustomers.length} - > this is now just paginatedCustomers in the CustomersTable
+        // // page={page}
+        // // rows={paginatedCustomers}
+        // // rowsPerPage={rowsPerPage}
+        // />
         <CustomersAddForm handleCustomerForm={handleCustomerForm} />
       )}
     </Stack>
