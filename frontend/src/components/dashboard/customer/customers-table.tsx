@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -12,78 +14,58 @@ import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
-import { isAxiosError } from 'axios';
 import dayjs from 'dayjs';
 
-import { ApiResponse } from '@/types/api-response';
-import { User } from '@/types/user';
 import { useSelection } from '@/hooks/use-selection';
-import { useAxios } from '@/hooks/useAxios';
 
 function noop(): void {
   // do nothing
 }
 
-const client = useAxios();
+// export interface Customer {
+//   id: string;
+//   avatar: string;
+//   name: string;
+//   email: string;
+//   address: { city: string; state: string; country: string; street: string };
+//   phone: string;
+//   createdAt: Date;
+// }
 
-function applyPagination(customers: Customer[], page: number, rowsPerPage: number): Customer[] {
-  return customers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-}
-
-export interface Customer {
+interface Customer {
   id: string;
-  avatar: string;
   name: string;
-  email: string;
-  address: { city: string; state: string; country: string; street: string };
-  phone: string;
-  createdAt: Date;
+  address: string;
+  zip_code: string;
+  city: string;
+  state: string;
+  website: string;
+  phone_number: string;
+  customers: { id: string }[];
+  _count: { customers: number };
 }
 
-// NOT NEEDED AS NO PROPS WILL BE BROUGHT IN
 interface CustomersTableProps {
-  paginatedCustomers?: number;
+  count?: number;
   page?: number;
   rows?: Customer[];
   rowsPerPage?: number;
 }
 
 export function CustomersTable({
-  // paginatedCustomers = 0,
-  //count = 0 -> this is now paginatedCustomers
-  // rows = [],
+  count = 0,
+  rows = [],
   page = 0,
   rowsPerPage = 0,
 }: CustomersTableProps): React.JSX.Element {
-  const [customers, setCustomers] = React.useState<Customer[]>([]);
-
-  React.useEffect(() => {
-    const getCustomers = async () => {
-      try {
-        const res = await client<ApiResponse<User>>('http://localhost:5000/user_company');
-        console.log(res);
-        setCustomers(res.data);
-      } catch (err) {
-        if (isAxiosError(err)) {
-          // router.replace(paths.auth.signIn);
-          console.log(err);
-        }
-      }
-    };
-    // checkUserSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Expected
-  }, []);
-
-  const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
-
   const rowIds = React.useMemo(() => {
-    return paginatedCustomers.map((customer: Customer) => customer.id);
-  }, [customers]);
+    return rows.map((customer) => customer.id);
+  }, [rows]);
 
   const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
 
-  const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < customers.length;
-  const selectedAll = customers.length > 0 && selected?.size === customers.length;
+  const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
+  const selectedAll = rows.length > 0 && selected?.size === rows.length;
 
   return (
     <Card>
@@ -105,14 +87,13 @@ export function CustomersTable({
                 />
               </TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell>City</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Phone</TableCell>
-              <TableCell>Signed Up</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {customers.map((customer: Customer) => {
+            {rows.map((customer: Customer) => {
               const isSelected = selected?.has(customer.id);
 
               return (
@@ -131,16 +112,14 @@ export function CustomersTable({
                   </TableCell>
                   <TableCell>
                     <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      <Avatar src={customer.avatar} />
                       <Typography variant="subtitle2">{customer.name}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>{customer.email}</TableCell>
+                  <TableCell>{customer.city}</TableCell>
                   <TableCell>
-                    {customer.address.city}, {customer.address.state}, {customer.address.country}
+                    {customer.address}, {customer.state}
                   </TableCell>
-                  <TableCell>{customer.phone}</TableCell>
-                  <TableCell>{dayjs(customer.createdAt).format('MMM D, YYYY')}</TableCell>
+                  <TableCell>{customer.phone_number}</TableCell>
                 </TableRow>
               );
             })}
@@ -150,7 +129,7 @@ export function CustomersTable({
       <Divider />
       <TablePagination
         component="div"
-        count={paginatedCustomers.length}
+        count={count}
         onPageChange={noop}
         onRowsPerPageChange={noop}
         page={page}
