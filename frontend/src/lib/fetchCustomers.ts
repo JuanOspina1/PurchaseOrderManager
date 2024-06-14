@@ -1,4 +1,4 @@
-// fetchCustomers.ts
+// lib/fetchCustomers.ts
 import axios from 'axios';
 
 import { ApiResponse } from '@/types/api-response';
@@ -16,9 +16,14 @@ interface Customer {
   _count: { customers: number };
 }
 
-export const fetchCustomers = async (axiosInstance: any) => {
+export const fetchCustomers = async (accessToken: string): Promise<Customer[]> => {
   try {
-    const res = await axiosInstance.get<ApiResponse<Customer[]>>('http://localhost:5000/user_company');
+    const res = await axios.get<ApiResponse<Customer[]>>('http://localhost:5000/user_company', {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
     const customersData: Customer[] = res.data.data.map((customerCompany) => ({
       id: customerCompany.id,
       name: customerCompany.name,
