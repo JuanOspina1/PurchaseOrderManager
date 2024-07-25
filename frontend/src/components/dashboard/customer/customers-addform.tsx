@@ -6,38 +6,47 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Divider from '@mui/material/Divider';
 import { Controller, DefaultValues, SubmitHandler, useForm } from 'react-hook-form';
+import PhoneInput from 'react-phone-number-input';
+
+import { createCustomer } from '../../../lib/createCustomers';
+
+import 'react-phone-number-input/style.css';
+
+import { matchIsValidTel, MuiTelInput } from 'mui-tel-input';
 
 interface FormProps {
   handleCustomerForm: any;
+  accessToken: string;
 }
 
 interface IFormData {
-  companyName: string;
-  streetAddress: string;
+  name: string;
+  address: string;
   city: string;
   state: string;
-  zipCode: string;
-  mainPhone: string;
+  zip_code: string;
+  phone_number: string;
   website: string;
 }
 
 const defaultValues: DefaultValues<IFormData> = {
-  companyName: '',
-  streetAddress: '',
+  name: '',
+  address: '',
   city: '',
   state: '',
-  zipCode: '',
-  mainPhone: '',
+  zip_code: '',
+  phone_number: '',
   website: '',
 };
 
-export function CustomersAddForm({ handleCustomerForm }: FormProps): React.JSX.Element {
+export function CustomersAddForm({ handleCustomerForm, accessToken }: FormProps): React.JSX.Element {
   const { handleSubmit, control } = useForm<IFormData>({
     defaultValues,
   });
 
-  const submitCustomer: SubmitHandler<IFormData> = (data) => {
-    console.log(data);
+  const submitCustomer: SubmitHandler<IFormData> = (customerData) => {
+    console.log(customerData);
+    createCustomer(customerData, accessToken);
     handleCustomerForm();
   };
 
@@ -56,14 +65,14 @@ export function CustomersAddForm({ handleCustomerForm }: FormProps): React.JSX.E
       >
         <Controller
           control={control}
-          name="companyName"
+          name="name"
           render={({ field: { onChange } }) => (
             <TextField required id="outlined-required" label="Company Name" onChange={onChange} />
           )}
         />
         <Controller
           control={control}
-          name="streetAddress"
+          name="address"
           render={({ field: { onChange } }) => (
             <TextField required id="outlined-required" label="Street Address" onChange={onChange} />
           )}
@@ -84,18 +93,48 @@ export function CustomersAddForm({ handleCustomerForm }: FormProps): React.JSX.E
         />
         <Controller
           control={control}
-          name="zipCode"
+          name="zip_code"
           render={({ field: { onChange } }) => (
             <TextField required id="outlined-required" label="Zip Code" onChange={onChange} />
           )}
         />
-        <Controller
+
+        {/* WORKING ON PHONE VALIDATION OPTIONS */}
+        {/* <Controller
           control={control}
-          name="mainPhone"
+          name="phone_number"
           render={({ field: { onChange } }) => (
-            <TextField required id="outlined-required" label="Main Phone" onChange={onChange} />
+            <TextField   
+              required
+              id="outlined-required"
+              label="Main Phone"
+              type="number"
+              onChange={(event) => onChange(+event.target.value)}
+            />
+          )}
+        /> */}
+        {/* <Controller
+          control={control}
+          name="phone_number"
+          render={({ field: { onChange } }) => <MuiTelInput required label="Main Phone" onChange={onChange} />}
+        /> */}
+
+        <Controller
+          name="phone_number"
+          control={control}
+          rules={{ validate: (value) => matchIsValidTel(value) }}
+          render={({ field: { ref: fieldRef, value, ...fieldProps }, fieldState }) => (
+            <MuiTelInput
+              {...fieldProps}
+              value={value ?? ''}
+              inputRef={fieldRef}
+              helperText={fieldState.invalid ? 'Tel is invalid' : ''}
+              error={fieldState.invalid}
+            />
           )}
         />
+        {/* WORKING ON PHONE VALIDATION OPTIONS */}
+
         <Controller
           control={control}
           name="website"

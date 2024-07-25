@@ -18,7 +18,7 @@ interface Customer {
 
 export const fetchCustomers = async (accessToken: string): Promise<Customer[]> => {
   try {
-    const res = await axios.get<ApiResponse<Customer[]>>('http://localhost:5000/user_company', {
+    const res = await axios.get<ApiResponse<Customer[]>>('http://localhost:5000/customer_company', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

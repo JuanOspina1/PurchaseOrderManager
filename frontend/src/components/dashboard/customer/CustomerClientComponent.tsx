@@ -1,5 +1,7 @@
 'use client';
 
+import { access } from 'fs';
+
 import * as React from 'react';
 import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
@@ -81,7 +83,7 @@ const ClientComponent: React.FC = () => {
       {toggleForm ? (
         <CustomersTable rows={paginatedCustomers} page={page} rowsPerPage={rowsPerPage} />
       ) : (
-        <CustomersAddForm handleCustomerForm={handleCustomerForm} />
+        <CustomersAddForm accessToken={accessToken} handleCustomerForm={handleCustomerForm} />
       )}
     </Stack>
   );

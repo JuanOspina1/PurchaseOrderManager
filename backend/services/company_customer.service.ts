@@ -112,7 +112,7 @@ export const createCustomerCompanyService = async (data: {
 	state: string;
 	website: string;
 	zip_code: string;
-	customers: string[];
+	// customers: string[];
 }) => {
 	const {
 		address,
@@ -122,7 +122,7 @@ export const createCustomerCompanyService = async (data: {
 		state,
 		website,
 		zip_code,
-		customers,
+		// customers,
 	} = data;
 
 	const requiredFields = checkFields([
@@ -149,21 +149,21 @@ export const createCustomerCompanyService = async (data: {
 		);
 	}
 
-	if (customers) {
-		if (!Array.isArray(customers))
-			throw new ErrorWithStatus(
-				StatusCodes.BAD_REQUEST,
-				`The customers field must be an array.`
-			);
-		customers.forEach((customer_id: any) => {
-			if (typeof customer_id !== "string") {
-				throw new ErrorWithStatus(
-					StatusCodes.BAD_REQUEST,
-					`The customer id must be a string. ${customer_id.toString()}`
-				);
-			}
-		});
-	}
+	// if (customers) {
+	// 	if (!Array.isArray(customers))
+	// 		throw new ErrorWithStatus(
+	// 			StatusCodes.BAD_REQUEST,
+	// 			`The customers field must be an array.`
+	// 		);
+	// 	customers.forEach((customer_id: any) => {
+	// 		if (typeof customer_id !== "string") {
+	// 			throw new ErrorWithStatus(
+	// 				StatusCodes.BAD_REQUEST,
+	// 				`The customer id must be a string. ${customer_id.toString()}`
+	// 			);
+	// 		}
+	// 	});
+	// }
 
 	try {
 		const company = await prisma.customer_Company.create({
@@ -175,9 +175,9 @@ export const createCustomerCompanyService = async (data: {
 				state,
 				website,
 				zip_code,
-				customers: {
-					connect: customers.map((customer_id) => ({ id: customer_id })),
-				},
+				// customers: {
+				// 	connect: customers.map((customer_id) => ({ id: customer_id })),
+				// },
 			},
 			select: customer_service_select,
 		});
@@ -202,7 +202,7 @@ export const UpdateCustomerCompanyService = async ({
 		name: string;
 		address: string;
 		city: string;
-		phone_number: number;
+		phone_number: string;
 		state: string;
 		website: string;
 		zip_code: string;

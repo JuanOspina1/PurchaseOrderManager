@@ -9,7 +9,7 @@ const Routes = (app: Express) => {
 	app.use("/", authRouter);
 	app.use("/user", userRouter);
 	app.use("/company", companyRouter);
-	app.use("/user_company", companyCustomerRouter);
+	app.use("/customer_company", companyCustomerRouter);
 	// app.use("/m_company", mainCompanyRouter);
 };
 
