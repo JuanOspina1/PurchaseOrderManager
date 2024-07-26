@@ -29,7 +29,7 @@ model Company {
   city         String
   state        String
   zip_code     String
-  phone_number Int
+  phone_number String
   website      String
 }
 
@@ -40,7 +40,7 @@ model Customer_Company {
   city         String
   state        String
   zip_code     String
-  phone_number Int
+  phone_number String
   website      String
   customers        User[]
 }

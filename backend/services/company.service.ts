@@ -87,7 +87,7 @@ export const CreateCompanyService = async ({
 	body: {
 		name: string;
 		address: string;
-		phone_number: number;
+		phone_number: string;
 		city: string;
 		state: string;
 		website: string;

@@ -1,4 +1,3 @@
-import { Request, Response } from "express";
 import {
 	getCurrentUser,
 	loginController,
@@ -17,11 +16,5 @@ Router.route("/refresh").get(Wrapper(refreshTokenController));
 Router.route("/user").get(AuthenticatedOnly, Wrapper(getCurrentUser));
 Router.route("/register").post(Wrapper(registerController));
 Router.route("/logout").post(AuthenticatedOnly, Wrapper(logoutController));
-Router.route("/test").get(
-	AuthenticatedOnly,
-	Wrapper((req: Request, res: Response) => {
-		res.send("hello world");
-	})
-);
 
 export default Router;
