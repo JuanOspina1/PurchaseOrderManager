@@ -8,7 +8,7 @@ async function main() {
 	try {
 		await CreateUser({
 			email: "admin@main.com",
-			password: "test",
+			password: "test123456",
 			address: "123 Main St",
 			first_name: "Admin",
 			last_name: "User",
@@ -17,7 +17,7 @@ async function main() {
 
 		await CreateUser({
 			email: "normal@main.com",
-			password: "test",
+			password: "test123456",
 			address: "345 Main St",
 			first_name: "Normal",
 			last_name: "User",
