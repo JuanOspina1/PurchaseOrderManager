@@ -2,7 +2,6 @@ const argon2 = require("argon2");
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ErrorWithStatus } from "../middlewear/ErrorWithStatus";
 import prisma from "../prisma/db";
-import { checkFields } from "../utils";
 const validator = require("email-validator");
 
 interface UserRegisterBody {
@@ -19,18 +18,18 @@ export const RegisterUserService = async (body: UserRegisterBody) => {
 		email = null,
 		password = null,
 	} = body;
-	const requiredFields = checkFields([
-		{ name: "first_name", field: first_name },
-		{ name: "last_name", field: last_name },
-		{ name: "email", field: email },
-		{ name: "password", field: password },
-	]);
+	// const requiredFields = checkFields([
+	// 	{ name: "first_name", field: first_name },
+	// 	{ name: "last_name", field: last_name },
+	// 	{ name: "email", field: email },
+	// 	{ name: "password", field: password },
+	// ]);
 
-	if (requiredFields !== null)
-		throw new ErrorWithStatus(
-			StatusCodes.BAD_REQUEST,
-			"Missing required fields " + requiredFields.join(", ")
-		);
+	// if (requiredFields !== null)
+	// 	throw new ErrorWithStatus(
+	// 		StatusCodes.BAD_REQUEST,
+	// 		"Missing required fields " + requiredFields.join(", ")
+	// 	);
 
 	// Verify email, and password
 	if (!validator.validate(email))
@@ -73,16 +72,16 @@ export const LoginUserService = async (body: {
 	password?: string;
 }) => {
 	const { email = null, password = null } = body;
-	const requiredFields = checkFields([
-		{ name: "email", field: email },
-		{ name: "password", field: password },
-	]);
+	// const requiredFields = checkFields([
+	// 	{ name: "email", field: email },
+	// 	{ name: "password", field: password },
+	// ]);
 
-	if (requiredFields !== null)
-		throw new ErrorWithStatus(
-			StatusCodes.BAD_REQUEST,
-			"Missing required fields " + requiredFields.join(", ")
-		);
+	// if (requiredFields !== null)
+	// 	throw new ErrorWithStatus(
+	// 		StatusCodes.BAD_REQUEST,
+	// 		"Missing required fields " + requiredFields.join(", ")
+	// 	);
 
 	const user = await prisma.user.findUnique({
 		where: { email: email || undefined },

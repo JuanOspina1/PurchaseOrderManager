@@ -7,9 +7,15 @@ import {
 	GetCompanyService,
 } from "../services/company.service";
 import { MAIN_COMPANY_ID } from "../utils";
+import {
+	CreateCompanySchema,
+	UpdateCompanySchema,
+} from "../middlewear/validators/company_customer.validator";
+import validator from "../middlewear/validators";
 
 export const CreateCompany = async (req: Req, res: Response) => {
 	const { user, body } = req;
+	validator(CreateCompanySchema, body);
 	const Company = await CreateCompanyService({
 		body,
 		user,
@@ -40,10 +46,12 @@ export const GetCompany = async (req: Req, res: Response) => {
 // };
 
 export const EditCompany = async (req: Req, res: Response) => {
+	validator(UpdateCompanySchema, req.body);
 	const Company = await EditCompanyService({
 		company_id: MAIN_COMPANY_ID,
 		body: req.body,
 		user: req.user,
 	});
+
 	return res.status(StatusCodes.OK).json({ success: true, data: Company });
 };

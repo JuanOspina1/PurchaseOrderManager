@@ -10,6 +10,12 @@ import {
 	UpdateCustomerCompanyService,
 	createCustomerCompanyService,
 } from "../services/company_customer.service";
+import validator from "../middlewear/validators";
+import {
+	CreateCompanySchema,
+	CustomersToCompanySchema,
+	UpdateCompanySchema,
+} from "../middlewear/validators/company_customer.validator";
 
 export const getCustomerCompanies = async (req: Req, res: Response) => {
 	const { limit, page, address, city, name, state, sortOrder } = req.query;
@@ -30,6 +36,7 @@ export const getCustomerCompanies = async (req: Req, res: Response) => {
 };
 
 export const createCustomerCompany = async (req: Req, res: Response) => {
+	validator(CreateCompanySchema, req.body);
 	const company = await createCustomerCompanyService(req.body);
 	return res
 		.status(StatusCodes.CREATED)
@@ -47,6 +54,7 @@ export const getCustomerCompany = async (req: Req, res: Response) => {
 };
 
 export const updateCustomerCompany = async (req: Req, res: Response) => {
+	validator(UpdateCompanySchema, req.body);
 	const { id } = req.params;
 	const company = await UpdateCustomerCompanyService({ id, data: req.body });
 	return res
@@ -68,6 +76,7 @@ export const addCustomerToCustomerCompany = async (req: Req, res: Response) => {
 		params: { id },
 		body,
 	} = req;
+	validator(CustomersToCompanySchema, body);
 	const company = await AddCustomerToCustomerCompanyService({
 		company_id: id,
 		customers: body.customers,
@@ -83,6 +92,7 @@ export const removeCustomerFromCustomerCompany = async (
 		params: { id },
 		body,
 	} = req;
+	validator(CustomersToCompanySchema, body);
 	const company = await RemoveCustomerFromCustomerCompanyService({
 		company_id: id,
 		customers: body.customers,

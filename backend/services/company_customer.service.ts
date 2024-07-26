@@ -1,8 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { ErrorWithStatus } from "../middlewear/ErrorWithStatus";
 import prisma from "../prisma/db";
-import { checkFields } from "../utils";
-import { Req, UserType } from "../types";
+import { UserType } from "../types";
 
 const customer_service_select = {
 	id: true,
@@ -125,29 +124,29 @@ export const createCustomerCompanyService = async (data: {
 		// customers,
 	} = data;
 
-	const requiredFields = checkFields([
-		{ field: name, name: "name" },
-		{ field: address, name: "address" },
-		{ field: city, name: "city" },
-		{ field: phone_number, name: "phone_number" },
-		{ field: state, name: "state" },
-		{ field: website, name: "website" },
-		{ field: zip_code, name: "zip_code" },
-	]);
+	// const requiredFields = checkFields([
+	// 	{ field: name, name: "name" },
+	// 	{ field: address, name: "address" },
+	// 	{ field: city, name: "city" },
+	// 	{ field: phone_number, name: "phone_number" },
+	// 	{ field: state, name: "state" },
+	// 	{ field: website, name: "website" },
+	// 	{ field: zip_code, name: "zip_code" },
+	// ]);
 
-	if (requiredFields !== null) {
-		throw new ErrorWithStatus(
-			StatusCodes.BAD_REQUEST,
-			`The following fields are required: ${requiredFields.join(", ")}`.trim()
-		);
-	}
+	// if (requiredFields !== null) {
+	// 	throw new ErrorWithStatus(
+	// 		StatusCodes.BAD_REQUEST,
+	// 		`The following fields are required: ${requiredFields.join(", ")}`.trim()
+	// 	);
+	// }
 
-	if (typeof phone_number !== "number") {
-		throw new ErrorWithStatus(
-			StatusCodes.BAD_REQUEST,
-			`The phone number must be a number.`
-		);
-	}
+	// if (typeof phone_number !== "string") {
+	// 	throw new ErrorWithStatus(
+	// 		StatusCodes.BAD_REQUEST,
+	// 		`The phone number must be a string.`
+	// 	);
+	// }
 
 	// if (customers) {
 	// 	if (!Array.isArray(customers))
@@ -247,18 +246,18 @@ export const AddCustomerToCustomerCompanyService = async ({
 	customers: string | string[];
 }) => {
 	try {
-		if (!customers || customers.length === 0) {
-			throw new ErrorWithStatus(
-				StatusCodes.BAD_REQUEST,
-				"Please provide a customer id."
-			);
-		}
+		// if (!customers || customers.length === 0) {
+		// 	throw new ErrorWithStatus(
+		// 		StatusCodes.BAD_REQUEST,
+		// 		"Please provide a customer id."
+		// 	);
+		// }
 
-		if (typeof customers !== "string" && !Array.isArray(customers))
-			throw new ErrorWithStatus(
-				StatusCodes.BAD_REQUEST,
-				"Invalid customers provided. Please provide a customer id or an array of customer id's."
-			);
+		// if (typeof customers !== "string" && !Array.isArray(customers))
+		// 	throw new ErrorWithStatus(
+		// 		StatusCodes.BAD_REQUEST,
+		// 		"Invalid customers provided. Please provide a customer id or an array of customer id's."
+		// 	);
 
 		if (
 			Array.isArray(customers) &&
@@ -303,18 +302,18 @@ export const RemoveCustomerFromCustomerCompanyService = async ({
 	customers: string | string[];
 }) => {
 	try {
-		if (!customers || customers.length === 0) {
-			throw new ErrorWithStatus(
-				StatusCodes.BAD_REQUEST,
-				"Please provide a customer id."
-			);
-		}
+		// if (!customers || customers.length === 0) {
+		// 	throw new ErrorWithStatus(
+		// 		StatusCodes.BAD_REQUEST,
+		// 		"Please provide a customer id."
+		// 	);
+		// }
 
-		if (typeof customers !== "string" && !Array.isArray(customers))
-			throw new ErrorWithStatus(
-				StatusCodes.BAD_REQUEST,
-				"Invalid customers provided. Please provide a customer id or an array of customer id's."
-			);
+		// if (typeof customers !== "string" && !Array.isArray(customers))
+		// 	throw new ErrorWithStatus(
+		// 		StatusCodes.BAD_REQUEST,
+		// 		"Invalid customers provided. Please provide a customer id or an array of customer id's."
+		// 	);
 
 		if (
 			Array.isArray(customers) &&

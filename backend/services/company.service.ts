@@ -1,7 +1,6 @@
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ErrorWithStatus } from "../middlewear/ErrorWithStatus";
 import prisma from "../prisma/db";
-import { checkFields } from "../utils";
 import { UserType } from "../types";
 
 // THIS NEEDS TO BE REFACTORED TO ONLY GET COMPANY - EDIT COMPANY - AND ADD USER TO COMPANY
@@ -103,23 +102,23 @@ export const CreateCompanyService = async ({
 
 	const { name, address, phone_number, city, state, website, zip_code } = body;
 
-	const requiredFields = checkFields([
-		{ name: "name", field: name },
-		{ name: "address", field: address },
-		{ name: "phone_number", field: phone_number },
-		{ name: "city", field: city },
-		{ name: "state", field: state },
-		{ name: "website", field: website },
-		{ name: "zip_code", field: zip_code },
-	]);
+	// const requiredFields = checkFields([
+	// 	{ name: "name", field: name },
+	// 	{ name: "address", field: address },
+	// 	{ name: "phone_number", field: phone_number },
+	// 	{ name: "city", field: city },
+	// 	{ name: "state", field: state },
+	// 	{ name: "website", field: website },
+	// 	{ name: "zip_code", field: zip_code },
+	// ]);
 
-	// TODO: phone number validation
+	// // TODO: phone number validation
 
-	if (requiredFields !== null)
-		throw new ErrorWithStatus(
-			StatusCodes.BAD_REQUEST,
-			"Missing required fields " + requiredFields.join(", ")
-		);
+	// if (requiredFields !== null)
+	// 	throw new ErrorWithStatus(
+	// 		StatusCodes.BAD_REQUEST,
+	// 		"Missing required fields " + requiredFields.join(", ")
+	// 	);
 
 	const company = await prisma.company.create({
 		data: {
