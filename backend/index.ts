@@ -1,6 +1,7 @@
 import { ErrorHandler } from "./middlewear/ErrorHandler.js";
 import Routes from "./routes/index.js";
 import cors from "cors";
+import morgan from "morgan";
 const express = require("express");
 const cookieParser = require("cookie-parser");
 require("dotenv").config({ path: "../.env" });
@@ -17,6 +18,7 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
+app.use(morgan("dev"));
 Routes(app);
 
 app.use(ErrorHandler);
