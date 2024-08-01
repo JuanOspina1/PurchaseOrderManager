@@ -91,7 +91,7 @@ export const registerController = async (req: Request, res: Response) => {
 };
 
 export const logoutController = async (req: Request, res: Response) => {
-	res.clearCookie("access_token");
+	// res.clearCookie("access_token");
 	res.clearCookie("refresh_token");
 
 	return res.status(StatusCodes.OK).json({
