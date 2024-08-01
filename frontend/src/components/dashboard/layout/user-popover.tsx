@@ -16,6 +16,7 @@ import { paths } from '@/paths';
 import { authClient } from '@/lib/auth/client';
 import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
+import { useLogout } from '@/hooks/auth/useLogout';
 
 export interface UserPopoverProps {
   anchorEl: Element | null;
@@ -24,29 +25,7 @@ export interface UserPopoverProps {
 }
 
 export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): React.JSX.Element {
-  const { checkSession } = useUser();
-
-  const router = useRouter();
-
-  const handleSignOut = React.useCallback(async (): Promise<void> => {
-    try {
-      const { error } = await authClient.signOut();
-
-      if (error) {
-        logger.error('Sign out error', error);
-        return;
-      }
-
-      // Refresh the auth state
-      await checkSession?.();
-
-      // UserProvider, for this case, will not refresh the router and we need to do it manually
-      router.refresh();
-      // After refresh, AuthGuard will handle the redirect
-    } catch (err) {
-      logger.error('Sign out error', err);
-    }
-  }, [checkSession, router]);
+  const {mutate, isPending} = useLogout();
 
   return (
     <Popover
@@ -76,11 +55,11 @@ export function UserPopover({ anchorEl, onClose, open }: UserPopoverProps): Reac
           </ListItemIcon>
           Profile
         </MenuItem>
-        <MenuItem onClick={handleSignOut}>
+        <MenuItem onClick={() => mutate()}>
           <ListItemIcon>
             <SignOutIcon fontSize="var(--icon-fontSize-md)" />
           </ListItemIcon>
-          Sign out
+          {isPending ? "Loading..." : "Sign out"} 
         </MenuItem>
       </MenuList>
     </Popover>
