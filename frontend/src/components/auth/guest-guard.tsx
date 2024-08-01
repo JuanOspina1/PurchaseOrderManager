@@ -18,18 +18,22 @@ export interface GuestGuardProps {
 
 export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | null {
   const router = useRouter();
-  const { user, error, isLoading, setIsLoading } = useUser();
+  const { error, setDetails } = useUser();
+  const [isLoading, setIsLoading] = React.useState(true)
+
   const client = useAxios();
 
   React.useEffect(() => {
     const checkUserSession = async () => {
       try {
-        const res = await client<ApiResponse<User>>('http://localhost:5000/user');
+        const res = await client<ApiResponse<User>>('/user');
 
         if (res.status === 200) {
+          setDetails(res.data.data)
           router.replace(paths.dashboard.overview);
         }
       } catch (err) {
+        setIsLoading(false)
         if (isAxiosError(err)) {
           logger.debug(err.message);
         }
@@ -43,5 +47,5 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
     return <Alert color="error">{error}</Alert>;
   }
 
-  return <React.Fragment>{children}</React.Fragment>;
+  return <React.Fragment>{isLoading ? <p>Loading...</p> : children}</React.Fragment>;
 }
