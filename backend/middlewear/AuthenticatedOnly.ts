@@ -8,16 +8,15 @@ import { getUserService } from "../services/user.service";
 const jwt = require("jsonwebtoken");
 
 const AuthenticatedOnly = async (
-	req: Req,
-	res: Response,
+	req: Request,
+	_res: Response,
 	next: NextFunction
 ) => {
-
-	const bearerHeader = req.headers['authorization'];
+	const bearerHeader = req.headers["authorization"];
 
 	try {
-		if (typeof bearerHeader !== 'undefined') {
-			const bearer = bearerHeader.split(' ');
+		if (typeof bearerHeader !== "undefined") {
+			const bearer = bearerHeader.split(" ");
 			const token = bearer[1];
 
 			const decodedAccessToken = jwt.verify(
@@ -27,27 +26,25 @@ const AuthenticatedOnly = async (
 
 			const user = await getUserService(decodedAccessToken.userId);
 
-			req.user = { id : decodedAccessToken.userId, ...user};
+			(req as any).user = { id: decodedAccessToken.userId, ...user };
 		}
 
 		const user = await prisma.user.findUnique({
-			where: { id: req.user.id },
+			where: { id: (req as any).user.id },
 			select: CleanDBUserSelect,
 		});
 
 		if (!user) {
 			next(new ErrorWithStatus(StatusCodes.NOT_FOUND, "User not found."));
 		} else {
-			req.user = user;
+			(req as any).user = user;
 			next();
 		}
-	}
-	catch (err) {
+	} catch (err) {
 		next(
 			new ErrorWithStatus(StatusCodes.UNAUTHORIZED, "Authentication failed.")
 		);
 	}
-}
-
+};
 
 export default AuthenticatedOnly;

@@ -1,7 +1,7 @@
 import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import { ErrorWithStatus } from "../middlewear/ErrorWithStatus";
 import prisma from "../prisma/db";
-import { CleanDBUserSelect, PasswordGenerator, checkFields } from "../utils";
+import { CleanDBUserSelect, PasswordGenerator } from "../utils";
 const validator = require("email-validator");
 const argon2 = require("argon2");
 
@@ -53,17 +53,17 @@ export const getUsersService = async ({
 
 export const createUserService = async ({ body, activeUser }: newUserBody) => {
 	const { first_name, last_name, email } = body;
-	const requiredFields = checkFields([
-		{ name: "first_name", field: first_name },
-		{ name: "last_name", field: last_name },
-		{ name: "email", field: email },
-	]);
+	// const requiredFields = checkFields([
+	// 	{ name: "first_name", field: first_name },
+	// 	{ name: "last_name", field: last_name },
+	// 	{ name: "email", field: email },
+	// ]);
 
-	if (requiredFields !== null)
-		throw new ErrorWithStatus(
-			StatusCodes.BAD_REQUEST,
-			"Missing required fields " + requiredFields.join(", ")
-		);
+	// if (requiredFields !== null)
+	// 	throw new ErrorWithStatus(
+	// 		StatusCodes.BAD_REQUEST,
+	// 		"Missing required fields " + requiredFields.join(", ")
+	// 	);
 
 	// Verify email, and password
 	if (!validator.validate(email))

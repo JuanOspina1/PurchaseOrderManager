@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
-const config = {};
+const config = {
+  transpilePackages: ['mui-tel-input'],
+};
 
 export default config;

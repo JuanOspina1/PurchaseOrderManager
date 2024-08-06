@@ -1,4 +1,3 @@
-import { Request, Response } from "express";
 import AuthenticatedOnly from "../middlewear/AuthenticatedOnly";
 import {
 	createUserController,
@@ -9,11 +8,11 @@ import {
 } from "../controllers/user.controller";
 import Wrapper from "../middlewear/Wrapper";
 
-const express = require("express");
+import express from "express";
 const Router = express.Router();
 
 Router.route("/")
-	.get(AuthenticatedOnly, getUsersController)
+	.get(AuthenticatedOnly, Wrapper(getUsersController))
 	.post(AuthenticatedOnly, Wrapper(createUserController));
 
 Router.route("/:id")

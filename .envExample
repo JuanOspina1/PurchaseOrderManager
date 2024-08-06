@@ -3,3 +3,4 @@ JWT_ACCESS_SECRET = "jwt_access_secret"
 JWT_REFRESH_SECRET = "jwt_refresh_secret" 
 ACCESS_COOKIE = 900000 # 15 minutes
 REFRESH_COOKIE = 604800000  # 7 days
+CLIENT_URL=http//localhost:3000

@@ -22,14 +22,27 @@ function noop(): void {
   // do nothing
 }
 
-export interface Customer {
+// export interface Customer {
+//   id: string;
+//   avatar: string;
+//   name: string;
+//   email: string;
+//   address: { city: string; state: string; country: string; street: string };
+//   phone: string;
+//   createdAt: Date;
+// }
+
+interface Customer {
   id: string;
-  avatar: string;
   name: string;
-  email: string;
-  address: { city: string; state: string; country: string; street: string };
-  phone: string;
-  createdAt: Date;
+  address: string;
+  zip_code: string;
+  city: string;
+  state: string;
+  website: string;
+  phone_number: string;
+  customers: { id: string }[];
+  _count: { customers: number };
 }
 
 interface CustomersTableProps {
@@ -74,42 +87,39 @@ export function CustomersTable({
                 />
               </TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell>City</TableCell>
               <TableCell>Location</TableCell>
               <TableCell>Phone</TableCell>
-              <TableCell>Signed Up</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => {
-              const isSelected = selected?.has(row.id);
+            {rows.map((customer: Customer) => {
+              const isSelected = selected?.has(customer.id);
 
               return (
-                <TableRow hover key={row.id} selected={isSelected}>
+                <TableRow hover key={customer.id} selected={isSelected}>
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={isSelected}
                       onChange={(event) => {
                         if (event.target.checked) {
-                          selectOne(row.id);
+                          selectOne(customer.id);
                         } else {
-                          deselectOne(row.id);
+                          deselectOne(customer.id);
                         }
                       }}
                     />
                   </TableCell>
                   <TableCell>
                     <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      <Avatar src={row.avatar} />
-                      <Typography variant="subtitle2">{row.name}</Typography>
+                      <Typography variant="subtitle2">{customer.name}</Typography>
                     </Stack>
                   </TableCell>
-                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{customer.city}</TableCell>
                   <TableCell>
-                    {row.address.city}, {row.address.state}, {row.address.country}
+                    {customer.address}, {customer.state}
                   </TableCell>
-                  <TableCell>{row.phone}</TableCell>
-                  <TableCell>{dayjs(row.createdAt).format('MMM D, YYYY')}</TableCell>
+                  <TableCell>{customer.phone_number}</TableCell>
                 </TableRow>
               );
             })}

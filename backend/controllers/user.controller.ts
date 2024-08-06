@@ -7,6 +7,8 @@ import {
 	getUsersService,
 } from "../services/user.service";
 import { Req } from "../types";
+import validator from "../middlewear/validators";
+import { CreateUserSchema } from "../middlewear/validators/user.validator";
 
 export const getUserController = async (req: Request, res: Response) => {
 	const { id: userId } = req.params;
@@ -28,6 +30,7 @@ export const getUsersController = async (req: Request, res: Response) => {
 };
 
 export const createUserController = async (req: Req, res: Response) => {
+	validator(CreateUserSchema, req.body);
 	const user = await createUserService({
 		body: req.body,
 		activeUser: req.user,

@@ -12,7 +12,7 @@ interface fieldsType {
  * @returns An array of field names that are missing, or null if all fields are present.
  */
 
-export const checkFields = (fields: fieldsType[]) => {
+const _checkFields = (fields: fieldsType[]) => {
 	let errors = <String[]>[];
 
 	fields.forEach((field) => {
