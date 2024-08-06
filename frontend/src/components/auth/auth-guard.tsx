@@ -18,13 +18,16 @@ export interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | null {
   const router = useRouter();
-  const { user, error, isLoading } = useUser();
+  const { error, setDetails} = useUser();
   const client = useAxios();
+  const [isLoading, setIsLoading] = React.useState(true)
 
   React.useEffect(() => {
     const checkUserSession = async () => {
       try {
-        await client<ApiResponse<User>>('http://localhost:5000/user');
+        const res = await client<ApiResponse<User>>('/user');
+        setDetails(res.data.data)
+        setIsLoading(false)
       } catch (err) {
         if (isAxiosError(err)) {
           router.replace(paths.auth.signIn);
@@ -43,5 +46,5 @@ export function AuthGuard({ children }: AuthGuardProps): React.JSX.Element | nul
     return <Alert color="error">{error}</Alert>;
   }
 
-  return <React.Fragment>{children}</React.Fragment>;
+  return <>{isLoading ? <p>Loading...</p> :children}</>;
 }

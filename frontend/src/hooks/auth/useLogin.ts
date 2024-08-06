@@ -13,7 +13,7 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: async (input: SignInWithPasswordParams) => {
-      const res = await axios.post<AuthResponse>('http://localhost:5000/login', input, { withCredentials: true });
+      const res = await axios.post<AuthResponse>('/login', input, { withCredentials: true });
 
       return res.data;
     },
