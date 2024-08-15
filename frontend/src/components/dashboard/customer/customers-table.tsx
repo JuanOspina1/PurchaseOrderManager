@@ -17,6 +17,8 @@ import Typography from '@mui/material/Typography';
 import dayjs from 'dayjs';
 
 import { useSelection } from '@/hooks/use-selection';
+import { ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, PaginationState, useReactTable } from '@tanstack/react-table';
+import { PageMetadata } from '@/types/page-list';
 
 function noop(): void {
   // do nothing
@@ -32,108 +34,82 @@ function noop(): void {
 //   createdAt: Date;
 // }
 
-interface Customer {
-  id: string;
-  name: string;
-  address: string;
-  zip_code: string;
-  city: string;
-  state: string;
-  website: string;
-  phone_number: string;
-  customers: { id: string }[];
-  _count: { customers: number };
+
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[]
+  data: TData[],
+  pagination: PaginationState,
+  pageMetadata : PageMetadata,
+  setPagination: React.Dispatch<React.SetStateAction<PaginationState>>
 }
 
-interface CustomersTableProps {
-  count?: number;
-  page?: number;
-  rows?: Customer[];
-  rowsPerPage?: number;
-}
-
-export function CustomersTable({
-  count = 0,
-  rows = [],
-  page = 0,
-  rowsPerPage = 0,
-}: CustomersTableProps): React.JSX.Element {
-  const rowIds = React.useMemo(() => {
-    return rows.map((customer) => customer.id);
-  }, [rows]);
-
-  const { selectAll, deselectAll, selectOne, deselectOne, selected } = useSelection(rowIds);
-
-  const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
-  const selectedAll = rows.length > 0 && selected?.size === rows.length;
-
+export function CustomersTable<TData, TValue>({columns, data, pageMetadata, pagination, setPagination}: DataTableProps<TData, TValue>): React.JSX.Element {
+  const table = useReactTable({
+    data,
+    columns,
+    state : {
+      pagination,
+    },
+    manualPagination : true,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onPaginationChange : setPagination,
+  })
   return (
     <Card>
       <Box sx={{ overflowX: 'auto' }}>
         <Table sx={{ minWidth: '800px' }}>
           <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  checked={selectedAll}
-                  indeterminate={selectedSome}
-                  onChange={(event) => {
-                    if (event.target.checked) {
-                      selectAll();
-                    } else {
-                      deselectAll();
-                    }
-                  }}
-                />
-              </TableCell>
-              <TableCell>Name</TableCell>
-              <TableCell>City</TableCell>
-              <TableCell>Location</TableCell>
-              <TableCell>Phone</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.map((customer: Customer) => {
-              const isSelected = selected?.has(customer.id);
-
-              return (
-                <TableRow hover key={customer.id} selected={isSelected}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={(event) => {
-                        if (event.target.checked) {
-                          selectOne(customer.id);
-                        } else {
-                          deselectOne(customer.id);
+            {table.getHeaderGroups().map(headerGroup => (
+              <TableRow key={headerGroup.id} >
+                {headerGroup.headers.map(header => {
+                  return (
+                      <TableCell key={header.id}>
+                        {header.isPlaceholder ? null :
+                        flexRender(header.column.columnDef.header, header.getContext())
                         }
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
-                      <Typography variant="subtitle2">{customer.name}</Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>{customer.city}</TableCell>
-                  <TableCell>
-                    {customer.address}, {customer.state}
-                  </TableCell>
-                  <TableCell>{customer.phone_number}</TableCell>
-                </TableRow>
-              );
-            })}
+                      </TableCell>
+                  )
+                })}
+              </TableRow>
+            ))}
+            </TableHead>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map(row => {
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map(cell => {
+                      return <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    })}
+                  </TableRow>
+                )
+              })
+            ): (
+              <TableRow>
+              <TableCell colSpan={columns.length} className="h-24 text-center">
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </Box>
       <Divider />
+
+      {/* TODO: will make this work with server side pagination */}
       <TablePagination
         component="div"
-        count={count}
+        count={-1}
         onPageChange={noop}
         onRowsPerPageChange={noop}
-        page={page}
-        rowsPerPage={rowsPerPage}
+        page={pageMetadata.currentPage}
+        rowsPerPage={pageMetadata.pageSize}
         rowsPerPageOptions={[5, 10, 25]}
       />
     </Card>
