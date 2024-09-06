@@ -80,6 +80,10 @@ export const GetCustomerCompaniesService = async (props: {
 	});
 };
 
+export const GetCustomerCompaniesCountService = async () => {
+	return await prisma.customer_Company.count();
+}
+
 export const GetCustomerCompanyService = async (id: string, user: UserType) => {
 	const company = await prisma.customer_Company.findUnique({
 		where: {

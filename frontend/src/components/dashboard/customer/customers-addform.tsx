@@ -13,41 +13,30 @@ import { createCustomer } from '../../../lib/createCustomers';
 import 'react-phone-number-input/style.css';
 
 import { matchIsValidTel, MuiTelInput } from 'mui-tel-input';
+import { z } from 'zod';
+import { addCustomerSchema } from '@/schemas/customers/addCustomerSchema';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CustomerInputType } from '@/types/customer.type';
+import { useAddCustomer } from '@/hooks/customers/useAddCustomer';
 
 interface FormProps {
   handleCustomerForm: any;
-  accessToken: string;
 }
 
-interface IFormData {
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-  phone_number: string;
-  website: string;
-}
-
-const defaultValues: DefaultValues<IFormData> = {
-  name: '',
-  address: '',
-  city: '',
-  state: '',
-  zip_code: '',
-  phone_number: '',
-  website: '',
-};
-
-export function CustomersAddForm({ handleCustomerForm, accessToken }: FormProps): React.JSX.Element {
-  const { handleSubmit, control } = useForm<IFormData>({
-    defaultValues,
+export function CustomersAddForm({ handleCustomerForm }: FormProps): React.JSX.Element {
+  const { handleSubmit, register, control, formState: {errors}} = useForm<CustomerInputType>({
+    resolver: zodResolver(addCustomerSchema)
   });
+  const {mutate, isSuccess, isPending} = useAddCustomer();
 
-  const submitCustomer: SubmitHandler<IFormData> = (customerData) => {
-    console.log(customerData);
-    createCustomer(customerData, accessToken);
-    handleCustomerForm();
+  React.useEffect(() => {
+    if(isSuccess) {
+      handleCustomerForm();
+    }
+  }, [isSuccess])
+
+  const submitCustomer: SubmitHandler<CustomerInputType> = (customerData) => {
+    mutate(customerData)
   };
 
   return (
@@ -63,86 +52,31 @@ export function CustomersAddForm({ handleCustomerForm, accessToken }: FormProps)
         noValidate
         autoComplete="off"
       >
-        <Controller
-          control={control}
-          name="name"
-          render={({ field: { onChange } }) => (
-            <TextField required id="outlined-required" label="Company Name" onChange={onChange} />
-          )}
-        />
-        <Controller
-          control={control}
-          name="address"
-          render={({ field: { onChange } }) => (
-            <TextField required id="outlined-required" label="Street Address" onChange={onChange} />
-          )}
-        />
-        <Controller
-          control={control}
-          name="city"
-          render={({ field: { onChange } }) => (
-            <TextField required id="outlined-required" label="City" onChange={onChange} />
-          )}
-        />
-        <Controller
-          control={control}
-          name="state"
-          render={({ field: { onChange } }) => (
-            <TextField required id="outlined-required" label="State" onChange={onChange} />
-          )}
-        />
-        <Controller
-          control={control}
-          name="zip_code"
-          render={({ field: { onChange } }) => (
-            <TextField required id="outlined-required" label="Zip Code" onChange={onChange} />
-          )}
-        />
-
-        {/* WORKING ON PHONE VALIDATION OPTIONS */}
-        {/* <Controller
-          control={control}
-          name="phone_number"
-          render={({ field: { onChange } }) => (
-            <TextField   
-              required
-              id="outlined-required"
-              label="Main Phone"
-              type="number"
-              onChange={(event) => onChange(+event.target.value)}
-            />
-          )}
-        /> */}
-        {/* <Controller
-          control={control}
-          name="phone_number"
-          render={({ field: { onChange } }) => <MuiTelInput required label="Main Phone" onChange={onChange} />}
-        /> */}
-
+        <TextField required id="outlined-required" label="Company Name" {...register("name")} />
+        <TextField required id="outlined-required" label="Street Address" {...register("address")} />
+        <TextField required id="outlined-required" label="City" {...register("city")} />
+        <TextField required id="outlined-required" label="State" {...register("state")} />
+        <TextField required id="outlined-required" label="Zip Code"{...register("zip_code")} />
         <Controller
           name="phone_number"
           control={control}
           rules={{ validate: (value) => matchIsValidTel(value) }}
-          render={({ field: { ref: fieldRef, value, ...fieldProps }, fieldState }) => (
-            <MuiTelInput
-              {...fieldProps}
-              value={value ?? ''}
-              inputRef={fieldRef}
-              helperText={fieldState.invalid ? 'Tel is invalid' : ''}
-              error={fieldState.invalid}
-            />
-          )}
-        />
-        {/* WORKING ON PHONE VALIDATION OPTIONS */}
-
-        <Controller
-          control={control}
-          name="website"
-          render={({ field: { onChange } }) => <TextField id="outlined-required" label="Website" onChange={onChange} />}
-        />
+          render={({ field: { ref: fieldRef, value, ...fieldProps }, fieldState }) => {
+            return (
+              <MuiTelInput
+                {...fieldProps}
+                value={value ?? ''}
+                inputRef={fieldRef}
+                helperText={fieldState.invalid ? 'Tel is invalid' : ''}
+                error={fieldState.invalid}
+              />
+            )
+          }
+        }/>
+      <TextField id="outlined-required" label="Website" {...register("website")} />
 
         <Button variant="contained" type="submit" sx={{ m: 3, width: '25ch' }}>
-          Create New Customer
+          {isPending ? "Loading..." : "Create New Customer" }
         </Button>
       </Box>
       <Divider />

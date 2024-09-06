@@ -4,6 +4,7 @@ import { StatusCodes } from "http-status-codes";
 import {
 	AddCustomerToCustomerCompanyService,
 	DeleteCustomerCompanyService,
+	GetCustomerCompaniesCountService,
 	GetCustomerCompaniesService,
 	GetCustomerCompanyService,
 	RemoveCustomerFromCustomerCompanyService,
@@ -16,12 +17,15 @@ import {
 	CustomersToCompanySchema,
 	UpdateCompanySchema,
 } from "../middlewear/validators/company_customer.validator";
+import { createPageList } from "../models/page-list";
 
 export const getCustomerCompanies = async (req: Req, res: Response) => {
 	const { limit, page, address, city, name, state, sortOrder } = req.query;
+	let currentPage = isNaN(Number(page)) ? 1 : Number(page)
+	let pageSize = isNaN(Number(limit)) ? 10 : Number(limit)
 	const companies = await GetCustomerCompaniesService({
-		page: isNaN(Number(page)) ? undefined : Number(page),
-		limit: isNaN(Number(limit)) ? undefined : Number(limit),
+		page: currentPage,
+		limit: pageSize,
 		sortOrder: Number(sortOrder) as 1 | -1,
 		filters: {
 			address,
@@ -30,9 +34,12 @@ export const getCustomerCompanies = async (req: Req, res: Response) => {
 			state,
 		},
 	});
+	const totalItems = await GetCustomerCompaniesCountService();
+	let pageList = createPageList(companies, currentPage, pageSize, totalItems);
+
 	return res
 		.status(StatusCodes.OK)
-		.json({ message: "success", data: companies });
+		.json({ message: "success", ...pageList});
 };
 
 export const createCustomerCompany = async (req: Req, res: Response) => {

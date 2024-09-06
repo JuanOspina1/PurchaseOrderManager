@@ -14,6 +14,10 @@ import { useUser } from '@/hooks/use-user';
 import { CustomersAddForm } from '@/components/dashboard/customer/customers-addform';
 import { CustomersFilters } from '@/components/dashboard/customer/customers-filters';
 import { CustomersTable } from '@/components/dashboard/customer/customers-table';
+import { customersColumn } from './customers-column';
+import { PaginationState } from '@tanstack/react-table';
+import { PageMetadata } from '@/types/page-list';
+import { useGetPaginatedCustomers } from '@/hooks/customers/useGetPaginatedCustomers';
 
 interface Customer {
   id: string;
@@ -29,28 +33,16 @@ interface Customer {
 }
 
 const ClientComponent: React.FC = () => {
-  const { accessToken, setIsLoading } = useUser();
-  const [customers, setCustomers] = React.useState<Customer[]>([]);
+  const [pagination, setPagination] = React.useState<PaginationState>({ pageIndex: 0, pageSize: 10 })
+  const {data, isSuccess, isPending} = useGetPaginatedCustomers(pagination, "");
   const [toggleForm, setToggleForm] = React.useState(true);
-
-  React.useEffect(() => {
-    const fetchInitialCustomers = async () => {
-      if (accessToken) {
-        const initialCustomers = await fetchCustomers(accessToken);
-        setCustomers(initialCustomers);
-      }
-    };
-
-    fetchInitialCustomers();
-  }, [accessToken]);
-
-  const page = 0;
-  const rowsPerPage = 5;
-
-  const paginatedCustomers = applyPagination(customers, page, rowsPerPage);
 
   function handleCustomerForm() {
     setToggleForm(!toggleForm);
+  }
+
+  if (isPending) {
+    return <p>Loading...</p>
   }
 
   return (
@@ -80,10 +72,10 @@ const ClientComponent: React.FC = () => {
         </div>
       </Stack>
       {toggleForm ? <CustomersFilters /> : null}
-      {toggleForm ? (
-        <CustomersTable rows={paginatedCustomers} page={page} rowsPerPage={rowsPerPage} />
+      {toggleForm ? isSuccess && (
+        <CustomersTable columns={customersColumn} data={data.data} pagination={pagination} setPagination={setPagination} pageMetadata={data.pageMetadata} />
       ) : (
-        <CustomersAddForm accessToken={accessToken} handleCustomerForm={handleCustomerForm} />
+        <CustomersAddForm  handleCustomerForm={handleCustomerForm} />
       )}
     </Stack>
   );
@@ -91,9 +83,9 @@ const ClientComponent: React.FC = () => {
 
 export default ClientComponent;
 
-function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
-  return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
-}
+// function applyPagination(rows: Customer[], page: number, rowsPerPage: number): Customer[] {
+//   return rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+// }
 
 // 'use client';
 
